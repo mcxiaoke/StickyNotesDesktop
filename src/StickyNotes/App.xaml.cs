@@ -118,6 +118,10 @@ public partial class App : Application
         // 7. 恢复上次未关闭的便签贴纸（保持原位与物理尺寸）
         try
         {
+            // 显式解析会话锁：其构造会启动「全局输入 + 闲置计时 + 锁屏监听」，
+            // 必须早于任何窗口创建，保证 --autostart/--minimized 路径下冷启动锁定同样生效。
+            _serviceProvider.GetRequiredService<SessionLockCoordinator>();
+
             var repo = _serviceProvider.GetRequiredService<INoteRepository>();
             var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
             var allActive = await repo.GetAllActiveAsync();
@@ -320,6 +324,9 @@ public partial class App : Application
         // 领域服务与配置
         services.AddSingleton<SettingsService>();
         services.AddSingleton<PinService>();
+        // 会话级空闲锁：必须在各窗口之前注册，使锁定状态成为进程内唯一真相源。
+        // 冷启动初值（LockOnLaunch）在此构造时即确定。
+        services.AddSingleton<SessionLockCoordinator>();
         services.AddSingleton<ExportImportService>();
         services.AddSingleton<ISearchService, SearchService>();
         services.AddSingleton<AutoSaveCoordinator>(sp =>

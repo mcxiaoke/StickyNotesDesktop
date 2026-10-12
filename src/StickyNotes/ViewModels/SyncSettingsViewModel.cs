@@ -258,7 +258,7 @@ public partial class SyncSettingsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(SaveSyncSettingsCommand))]
     private bool _hasUnsavedChanges;
 
-    private string _saveHintText = "配置修改后需点「保存」才会写入配置文件并触发同步";
+    private string _saveHintText = "配置修改后需点「保存」才会写入配置文件";
     /// <summary>保存提示行（未保存时提醒，保存后回显已保存时刻与同步触发）</summary>
     public string SaveHintText
     {
@@ -294,7 +294,7 @@ public partial class SyncSettingsViewModel : ObservableObject
         if (_suppressDraftDirty) return;
 
         HasUnsavedChanges = true;
-        SaveHintText = "⚠️ 配置已修改，点「保存」后将立即生效并触发同步";
+        SaveHintText = "⚠️ 配置已修改，点「保存」后将立即生效";
     }
 
     /// <summary>用草稿构造一份 SyncSettings（测试连接 / 校验用，不写回已保存配置）</summary>
@@ -417,7 +417,7 @@ public partial class SyncSettingsViewModel : ObservableObject
         if (HasUnsavedChanges)
         {
             MessageBox.Show(
-                "当前有未保存的同步配置修改，立即同步只会使用已保存的配置。\n请先点「保存」再同步。",
+                "当前有未保存的同步配置修改。\n请先点「保存」再同步。",
                 "立即同步", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
@@ -449,7 +449,7 @@ public partial class SyncSettingsViewModel : ObservableObject
         if (!HasUnsavedChanges) return true;
 
         var answer = MessageBox.Show(
-            "同步配置有未保存的修改，关闭将丢弃这些修改（不会影响已保存的配置）。\n确定要关闭吗？",
+            "同步配置有未保存的修改，关闭将丢弃这些修改）。\n确定要关闭吗？",
             "同步设置", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
         return answer == MessageBoxResult.OK;
     }

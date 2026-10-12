@@ -24,38 +24,44 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
 {
     private readonly SettingsService? _settingsService;
     private readonly PinService? _pinService;
+    private readonly SessionLockCoordinator? _sessionLock;
     private readonly SyncHost? _syncHost;
     private bool _isManualSyncing;
-
-    /// <summary>闲时自动关闭计时器：窗口持续不在前台达到设定分钟数后自动收起</summary>
-    private readonly DispatcherTimer _idleCloseTimer = new() { Interval = TimeSpan.FromMinutes(10) };
 
     /// <summary>同步结果轻提示条的自动收起计时器（仅成功/信息态启用，见 <see cref="ShowInfoBar"/>）</summary>
     private readonly DispatcherTimer _infoBarCloseTimer = new();
 
     public NotesListViewModel ViewModel => (NotesListViewModel)DataContext;
 
-    /// <summary>列表内容当前是否处于已解锁可见状态（供归档窗口判断是否需要初始锁定）</summary>
-    public bool IsContentAccessible => IsVisible && !PinOverlay.IsLocked;
-
     public NotesListWindow(
         NotesListViewModel viewModel,
         SettingsService? settingsService = null,
         PinService? pinService = null,
-        SyncHost? syncHost = null)
+        SyncHost? syncHost = null,
+        SessionLockCoordinator? sessionLock = null)
     {
         InitializeComponent();
         DataContext = viewModel;
         _settingsService = settingsService;
         _pinService = pinService;
         _syncHost = syncHost;
+        _sessionLock = sessionLock;
         PinOverlay.PinService = pinService;
+
+        // 会话锁是唯一的锁定真相源：窗口只做「同步显示」，不再自行判断该不该锁。
+        // 两个方向都要订阅 —— 缺 Unlocked 会出现「在归档窗口输了 PIN，主列表窗口遮罩却还在」的不一致。
+        // 本窗口解锁成功后回调闲置计时归零，避免解锁瞬间就再次超时。
+        if (_sessionLock != null)
+        {
+            _sessionLock.LockRequested += (_, _) => SyncLockState();
+            _sessionLock.Unlocked += (_, _) => SyncLockState();
+            PinOverlay.Unlocked += (_, _) => _sessionLock.Unlock();
+        }
 
         Loaded += async (_, _) =>
         {
             RestoreWindowPlacement();
-            // 初始锁定：启用 PIN 时窗口一打开即被遮罩覆盖
-            PinOverlay.IsLocked = _pinService?.IsPinEnabled ?? false;
+            SyncLockState();
             try
             {
                 await ViewModel.LoadNotesAsync();
@@ -67,31 +73,17 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
             }
         };
 
-        // 锁定规则：每次窗口从不可见变为可见（启动/托盘唤醒）都重新上锁；隐藏或收起时清空搜索词
+        // 窗口重新可见时（托盘唤醒、双击 exe 唤醒）只同步会话锁状态。
+        // 旧实现在此无条件上锁，导致「X 关到托盘 → 再打开必输 PIN」且与设定的分钟数无关。
         IsVisibleChanged += (s, e) =>
         {
-            _idleCloseTimer.Stop();
             if (e.NewValue is true)
             {
-                if (_pinService?.IsPinEnabled ?? false)
-                {
-                    PinOverlay.IsLocked = true;
-                }
+                SyncLockState();
             }
             else
             {
                 ViewModel.SearchText = string.Empty;
-            }
-        };
-
-        // 闲时自动关闭：窗口失去前台即开始计时，回到前台停止；到点自动 Close（复用关闭到托盘逻辑）
-        _idleCloseTimer.Tick += (_, _) =>
-        {
-            _idleCloseTimer.Stop();
-            if (IsVisible && WindowState != WindowState.Minimized)
-            {
-                AppLog.Info("[NotesListWindow] 列表窗口长时间不在前台，自动收起到托盘");
-                Close();
             }
         };
 
@@ -108,24 +100,12 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
 
         Activated += (_, _) =>
         {
-            _idleCloseTimer.Stop();
             if (PinOverlay.IsLocked) return;
             Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
             {
                 if (PinOverlay.IsLocked) return;
                 RestoreOptimalFocus();
             });
-        };
-
-        Deactivated += (_, _) =>
-        {
-            var minutes = _settingsService?.ListAutoCloseMinutes ?? 0;
-            if (minutes > 0 && IsVisible)
-            {
-                _idleCloseTimer.Interval = TimeSpan.FromMinutes(minutes);
-                _idleCloseTimer.Stop();
-                _idleCloseTimer.Start();
-            }
         };
 
         Closing += (s, e) =>
@@ -425,6 +405,13 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
         set => PinOverlay.IsLocked = value;
     }
 
+    /// <summary>
+    /// 测试钩子：模拟用户在本窗口输对 PIN。
+    /// 必须走遮罩自身的 <c>Unlocked</c> 事件而非直接改 <c>IsLocked</c> ——
+    /// 否则不会触发宿主对 <see cref="SessionLockCoordinator"/> 的解锁回调，测的就不是真实链路了。
+    /// </summary>
+    internal void UnlockForTest() => PinOverlay.UnlockForTest();
+
     /// <summary>测试钩子：以指定修饰键驱动窗口级快捷键处理逻辑（Ctrl 组合键无法在单测中伪造 Keyboard.Modifiers）</summary>
     internal void RaiseWindowPreviewKeyDown(KeyEventArgs e, ModifierKeys modifiers) => HandlePreviewKeyDown(e, modifiers);
 
@@ -487,6 +474,22 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
 
     // 兼容历史调用
     internal void SearchBox_KeyDown(object sender, KeyEventArgs e) => SearchBox_PreviewKeyDown(sender, e);
+
+    /// <summary>
+    /// 把会话锁状态同步到遮罩。窗口**只反映**状态，不自行判定该不该锁 ——
+    /// 锁定时机统一由 <see cref="SessionLockCoordinator"/> 依据「闲置时长」与冷启动规则决定。
+    /// 与 <see cref="PinService.IsPinEnabled"/> 取交集：用户在设置里清除 PIN 后立刻解除锁定，无需重启。
+    /// </summary>
+    private void SyncLockState()
+    {
+        if (_pinService is null) return;
+
+        PinOverlay.IsLocked = _pinService.IsPinEnabled && (_sessionLock?.IsLocked ?? false);
+        if (PinOverlay.IsLocked && _sessionLock != null)
+        {
+            PinOverlay.LockReason = _sessionLock.LockReason;
+        }
+    }
 
     /// <summary>
     /// 当窗口激活或从外部便签页返回时，智能恢复最佳键盘交互焦点

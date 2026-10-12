@@ -856,6 +856,75 @@ Assert.AreEqual("彩色便签", win.Title);
     }
 
     /// <summary>
+    /// 闲时锁定回归：X 关到托盘 → 再打开<b>不得</b>要求 PIN；
+    /// 只有会话锁真正进入锁定态时才遮罩。这是本次改造针对的核心痛点。
+    /// </summary>
+    [TestMethod]
+    public void NotesListWindow_HideThenShow_不应强制上锁_仅会话锁锁定时才遮罩()
+    {
+        TestEnvironment.RunInSta(() =>
+        {
+            var settings = TestEnvironment.CreateSettingsService();
+            var pin = new PinService(settings);
+            Assert.IsTrue(pin.SetPin("test-pin-1234"), "测试前置：必须先设置有效 PIN");
+
+            var clockNow = new DateTime(2026, 10, 11, 12, 0, 0, DateTimeKind.Utc);
+            using var sessionLock = new SessionLockCoordinator(
+                settings, pin, () => clockNow, attachRuntimeHooks: false);
+
+            var note = new Note { Id = Guid.NewGuid(), Content = "闲时锁定用例便签", Color = NoteColor.Yellow };
+            var repo = new FakeNoteRepository { Notes = { note } };
+            var windowManager = new WindowManager(TestEnvironment.CreateWindowManagerContainer(repo), repo);
+            var vm = new NotesListViewModel(repo, new SearchService(), windowManager);
+            vm.LoadNotesAsync().GetAwaiter().GetResult();
+
+            var win = new NotesListWindow(vm, settings, pin, null, sessionLock);
+            win.Show();
+            PumpDispatcher();
+            Assert.IsTrue(win.IsPinLockedForTest, "冷启动（会话初始即锁定）必须遮罩");
+
+            // 模拟用户在列表窗口输对 PIN
+            win.UnlockForTest();
+            PumpDispatcher();
+            Assert.IsFalse(win.IsPinLockedForTest, "输对 PIN 后应解除遮罩");
+
+            // 场景 1：X 关到托盘 → 重新打开。旧实现在此无条件上锁。
+            win.Hide();
+            PumpDispatcher();
+            win.Show();
+            PumpDispatcher();
+            Assert.IsFalse(win.IsPinLockedForTest, "托盘隐藏后再打开不应要求 PIN —— 设定时间没生效的根因修复");
+
+            // 场景 2：闲置超时，会话锁发事件 → 窗口遮罩
+            clockNow = clockNow.AddMinutes(11);
+            sessionLock.Evaluate();
+            PumpDispatcher();
+            Assert.IsTrue(win.IsPinLockedForTest, "闲置超阈值必须遮罩");
+
+            // 场景 3：解锁后重新隐藏/显示仍不应上锁
+            win.UnlockForTest();
+            PumpDispatcher();
+            win.Hide();
+            PumpDispatcher();
+            win.Show();
+            PumpDispatcher();
+            Assert.IsFalse(win.IsPinLockedForTest, "解锁后不应因再次显示而上锁");
+
+            win.Close();
+        });
+    }
+
+    /// <summary>推空调度队列，使 Loaded / IsVisibleChanged 等异步布局回调真正执行</summary>
+    private static void PumpDispatcher()
+    {
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.Loaded,
+            (Action)(() => { frame.Continue = false; }));
+        System.Windows.Threading.Dispatcher.PushFrame(frame);
+    }
+
+    /// <summary>
     /// F-P3-17：焦点被抢走时不得整段选中搜索词。
     /// 原先调用 <c>SelectAll()</c>，用户在列表首项按 ↑ 返回搜索框后继续打字，
     /// 会把整段搜索词一次性替换掉；现改为仅移动插入符到末尾。

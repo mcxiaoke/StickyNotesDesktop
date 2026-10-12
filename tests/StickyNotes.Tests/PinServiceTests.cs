@@ -127,7 +127,8 @@ public class PinServiceTests
     {
         var (settings, pin) = CreateService("s7.json");
         Assert.IsTrue(pin.SetPin("persist-1"));
-        Assert.AreEqual(10, settings.ListAutoCloseMinutes); // 默认闲时 10 分钟
+        Assert.AreEqual(10, settings.IdleLockMinutes);      // 默认闲置 10 分钟锁定
+        Assert.IsTrue(settings.LockOnLaunch);              // 冷启动默认锁定（防退出再重开绕过）
 
         // 模拟应用重启：重新加载同一 settings.json
         var settings2 = new SettingsService(Path.Combine(_testDir, "s7.json"));

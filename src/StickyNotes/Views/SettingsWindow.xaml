@@ -57,7 +57,7 @@
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                 <TextBlock Text="便签正文字号"
                                            Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="调整桌面便签贴纸的正文字体大小，即时生效"
+                                <TextBlock Text="调整便签的正文字体大小"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextWrapping="Wrap"
                                            Margin="0,3,0,0" />
@@ -112,7 +112,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="关闭主窗口时最小化到系统托盘" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="关闭主列表窗口后在后台保持运行，贴纸继续可用，通过托盘图标可随时唤醒"
+                                <TextBlock Text="关闭主列表窗口后在后台保持运行，通过托盘图标可随时唤醒"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -130,7 +130,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="启用系统全局快捷键" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="Win+Alt+N：随时快速新建便签；Win+Alt+H：随时呼出便签管理中心"
+                                <TextBlock Text="Win+Alt+N：快速新建便签；Win+Alt+H：打开便签列表"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -148,7 +148,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="开机自动启动" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="计算机启动登录时自动启动 StickyNotes 并恢复桌面敞开贴纸"
+                                <TextBlock Text="用户登录时自动启动应用"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -165,8 +165,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="开机启动时最小化到托盘" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="随系统自启时不弹出管理中心主窗口，仅恢复桌面贴纸并在托盘静默就绪"
+                                <TextBlock Text="启动时最小化到系统托盘" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="随系统自启时不弹出主窗口"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -248,7 +248,7 @@
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextTrimming="CharacterEllipsis"
                                            Margin="0,4,0,0" />
-                                <TextBlock Text="提示：在 exe 同目录下放置 portable.ini 即可开启便携绿化模式（数据保存在同级 app_data/ 目录）"
+                                <TextBlock Text="提示：在 exe 同目录下放置 portable.ini 即可开启便携模式）"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            FontSize="11"
                                            Margin="0,3,0,0"
@@ -293,7 +293,7 @@
                                        Style="{StaticResource Type.CaptionSubtle}"
                                        TextWrapping="Wrap"
                                        Margin="0,3,0,0" />
-                            <TextBlock Text="通过 WebDAV 或 Cloudflare R2 同步；后端、凭据与间隔在独立窗口配置"
+                            <TextBlock Text="通过 WebDAV 或 S3 同步"
                                        Style="{StaticResource Type.CaptionSubtle}"
                                        FontSize="11"
                                        Opacity="0.8"
@@ -340,8 +340,21 @@
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextWrapping="Wrap"
                                            Margin="0,3,0,0" />
+                                <!-- 锁定范围声明：桌面便签不上锁是产品有意决策，必须写明，
+                                     否则用户会以为贴在桌面上的正文也受保护（review 文档 676 行未决项） -->
+                                <TextBlock Text="{Binding PinScopeText}"
+                                           Style="{StaticResource Type.CaptionSubtle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0" />
+                                <!-- 假安全告警：PIN 已启用但两道防线全关时必须显式提示（F-P1-6 原则） -->
+                                <TextBlock Text="{Binding PinProtectionDisabledWarning}"
+                                           Style="{StaticResource Type.CaptionSubtle}"
+                                           Foreground="{StaticResource Fluent.DangerBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"
+                                           Visibility="{Binding IsPinProtectionDisabled, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 <!-- PIN 数据损坏告警：绝不允许「以为受保护实则未受保护」静默发生 -->
-                                <TextBlock Text="⚠ 检测到 PIN 配置数据缺失或已损坏，锁定已失效。请重新启用并设置 PIN。"
+                                <TextBlock Text="⚠ 检测到 PIN 配置数据缺失或已损坏，锁定已失效。"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            Foreground="{StaticResource Fluent.DangerBrush}"
                                            TextWrapping="Wrap"
@@ -376,7 +389,7 @@
 
                         <Separator Background="{StaticResource Fluent.SubtleBorderBrush}" Margin="0,0,0,10" />
 
-                        <!-- 2. 列表窗口闲时自动收起 -->
+                        <!-- 2. 闲置自动锁定 -->
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -384,20 +397,43 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                                <TextBlock Text="列表窗口不在前台时自动关闭" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="管理中心窗口持续不在前台达到设定时间后自动收起，再次打开时需输入 PIN（若已启用）"
+                                <TextBlock Text="闲置自动锁定" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="无任何键鼠输入达到设定时间后，自动锁定"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextWrapping="Wrap"
                                            Margin="0,3,0,0" />
                             </StackPanel>
 
                             <ComboBox Grid.Column="1"
-                                      Width="150"
-                                      ItemsSource="{Binding AutoCloseOptions}"
+                                      Width="215"
+                                      ItemsSource="{Binding IdleLockOptions}"
                                       DisplayMemberPath="Label"
                                       SelectedValuePath="Minutes"
-                                      SelectedValue="{Binding SelectedAutoCloseMinutes, Mode=TwoWay}"
+                                      SelectedValue="{Binding SelectedIdleLockMinutes, Mode=TwoWay}"
                                       VerticalAlignment="Center" />
+                        </Grid>
+
+                        <Separator Background="{StaticResource Fluent.SubtleBorderBrush}" Margin="0,12,0,10" />
+
+                        <!-- 3. 启动时锁定 -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="启动时锁定" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="每次启动应用都需要输入 PIN"
+                                           Style="{StaticResource Type.CaptionSubtle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0" />
+                            </StackPanel>
+
+                            <ui:ToggleSwitch Grid.Column="1"
+                                             IsChecked="{Binding LockOnLaunch, Mode=TwoWay}"
+                                             VerticalAlignment="Center"
+                                             AutomationProperties.Name="启动时锁定" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -423,9 +459,9 @@
                                    Margin="0,0,12,0"
                                    VerticalAlignment="Center" />
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="StickyNotes 彩色便签"
+                                <TextBlock Text="彩色便签"
                                            Style="{StaticResource Type.Subtitle}" />
-                                <TextBlock Text="基于 Windows 11 Fluent 2 现代桌面便签应用"
+                                <TextBlock Text="基于 Windows 11 Fluent 现代桌面便签应用"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            Margin="0,2,0,0" />
                             </StackPanel>

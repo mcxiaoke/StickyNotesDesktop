@@ -49,7 +49,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="启用网络同步" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="通过 WebDAV 或 Cloudflare R2 在多台设备间同步便签；同一便签按最新修改时间自动合并（修改后需点下方「保存」生效）"
+                                <TextBlock Text="通过 WebDAV 或 Cloudflare R2 在多台设备间同步便签；修改后需点下方「保存」生效"
                                            Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -114,7 +114,7 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock Text="允许明文 HTTP（仅限内网 NAS）" Style="{StaticResource Type.SettingTitle}" />
-                                    <TextBlock Text="默认强制 HTTPS；勾选后允许 http:// 地址，传输内容将不加密"
+                                    <TextBlock Text="默认强制 HTTPS；勾选后允许 http:// 地址"
                                                Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1"
@@ -179,7 +179,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                 <TextBlock Text="启用远端数据加密" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="便签正文经 AES-256 加密存入远端，服务商无法查看内容。（修改后需点下方「保存」生效并同步）"
+                                <TextBlock Text="便签正文经 AES-256 加密存入远端，服务商无法查看内容"
                                            Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -197,7 +197,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="后台同步间隔" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="便签新增/修改后 5 秒自动同步一次；此处为兜底轮询间隔"
+                                <TextBlock Text="便签新增/修改后 5 秒自动同步一次"
                                            Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                             </StackPanel>
                             <ComboBox Grid.Column="1"

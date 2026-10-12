@@ -14,7 +14,7 @@ namespace StickyNotes.ViewModels;
 
 public record FontSizeOption(string Label, double Size);
 
-public record AutoCloseOption(string Label, int Minutes);
+public record IdleLockOption(string Label, int Minutes);
 
 /// <summary>
 /// 应用程序独立设置窗口 ViewModel（网络同步细节已拆分至 <see cref="SyncSettingsViewModel"/>）
@@ -38,20 +38,21 @@ public partial class SettingsViewModel : ObservableObject
         new("超大 (24 pt)", 24.0)
     };
 
-    public IReadOnlyList<AutoCloseOption> AutoCloseOptions { get; } = new List<AutoCloseOption>
+    public IReadOnlyList<IdleLockOption> IdleLockOptions { get; } = new List<IdleLockOption>
     {
         new("不启用", 0),
-        new("离开 1 分钟后", 1),
-        new("离开 5 分钟后", 5),
-        new("离开 10 分钟后", 10),
-        new("离开 30 分钟后", 30)
+        new("闲置 1 分钟后", 1),
+        new("闲置 5 分钟后", 5),
+        new("闲置 10 分钟后（默认）", 10),
+        new("闲置 30 分钟后", 30),
+        new("闲置 60 分钟后", 60)
     };
 
     [ObservableProperty]
     private double _selectedFontSize;
 
     [ObservableProperty]
-    private int _selectedAutoCloseMinutes;
+    private int _selectedIdleLockMinutes;
 
     public string PreviewText => "这是一条便签示例文本：支持纯文本与多行输入，清晰易读 (StickyNotes 123 ABC)";
 
@@ -130,8 +131,43 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>PIN 配置数据是否已损坏（settings.json 中的盐/哈希缺失或非法，锁定已被强制失效）</summary>
     public bool IsPinDataCorrupted => _settingsService.Settings.PinDataCorrupted;
 
-    /// <summary>PIN 锁定状态描述文字</summary>
-    public string PinStatusText => IsPinEnabled ? "已启用，打开列表与归档时需输入 PIN" : "未启用";
+    /// <summary>
+    /// PIN 锁定状态描述文字。
+    /// 注意不能再写成「打开列表与归档时需输入 PIN」—— 闲时锁定改造后，
+    /// 打开窗口不再必然要求 PIN，锁定时机由闲置时长与启动锁定两项决定。
+    /// </summary>
+    public string PinStatusText => IsPinEnabled
+        ? "已启用，启动时与长时间未操作后需要输入 PIN"
+        : "未启用";
+
+    /// <summary>锁定范围声明：桌面便签不在保护范围内，必须显式写明，避免用户误判</summary>
+    public string PinScopeText => "当前锁定范围：便签列表窗口。";
+
+    /// <summary>
+    /// 是否处于「PIN 已启用但两道防线全关」的假安全状态。
+    /// 沿用 F-P1-6 的原则：绝不允许「以为受保护实则未受保护」静默发生。
+    /// </summary>
+    public bool IsPinProtectionDisabled =>
+        IsPinEnabled && !IsPinDataCorrupted && SelectedIdleLockMinutes == 0 && !LockOnLaunch;
+
+    /// <summary>假安全告警文案</summary>
+    public string PinProtectionDisabledWarning =>
+        "⚠ 已启用 PIN，但「闲置自动锁定」与「启动时锁定」都已关闭。";
+
+    /// <summary>进程冷启动时是否立即锁定</summary>
+    public bool LockOnLaunch
+    {
+        get => _settingsService.LockOnLaunch;
+        set
+        {
+            if (_settingsService.LockOnLaunch != value)
+            {
+                _settingsService.LockOnLaunch = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsPinProtectionDisabled));
+            }
+        }
+    }
 
     public SettingsViewModel(
         SettingsService settingsService,
@@ -149,7 +185,7 @@ public partial class SettingsViewModel : ObservableObject
         _windowManager = windowManager;
 
         _selectedFontSize = _settingsService.EditorFontSize;
-        _selectedAutoCloseMinutes = _settingsService.ListAutoCloseMinutes;
+        _selectedIdleLockMinutes = _settingsService.IdleLockMinutes;
 
         if (_syncHost != null)
         {
@@ -175,9 +211,10 @@ public partial class SettingsViewModel : ObservableObject
         _settingsService.SetEditorFontSize(value);
     }
 
-    partial void OnSelectedAutoCloseMinutesChanged(int value)
+    partial void OnSelectedIdleLockMinutesChanged(int value)
     {
-        _settingsService.ListAutoCloseMinutes = value;
+        _settingsService.IdleLockMinutes = value;
+        OnPropertyChanged(nameof(IsPinProtectionDisabled));
     }
 
     /// <summary>解析用于弹对话框的宿主窗口（当前激活窗口或主窗口）</summary>
@@ -190,6 +227,7 @@ public partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(IsPinEnabled));
         OnPropertyChanged(nameof(PinStatusText));
         OnPropertyChanged(nameof(IsPinDataCorrupted));
+        OnPropertyChanged(nameof(IsPinProtectionDisabled));
     }
 
     [RelayCommand]

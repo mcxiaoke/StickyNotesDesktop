@@ -60,9 +60,18 @@ public sealed class AppSettings
     public bool PinDataCorrupted { get; set; }
 
     /// <summary>
-    /// 列表窗口不在前台 N 分钟后自动关闭（0 表示不启用），下次打开时重新锁定
+    /// 无键鼠输入 N 分钟后自动锁定列表/归档窗口（0 表示不启用），窗口保持在原位不被隐藏。
+    /// 取代原 <c>ListAutoCloseMinutes</c>：后者只是自动隐藏窗口，而隐藏会让下次打开必然重新锁定，
+    /// 且完全不参与锁定判定，导致「设定时间没生效」的观感。
+    /// 详见 docs/PIN-IDLE-LOCK-DESIGN-20261011.md
     /// </summary>
-    public int ListAutoCloseMinutes { get; set; } = 10;
+    public int IdleLockMinutes { get; set; } = 10;
+
+    /// <summary>
+    /// 进程冷启动（含托盘退出后重新双击 exe）时立即锁定，默认开启。
+    /// 这是防「退出再重开绕过锁定」的唯一防线，关闭前应明确告知风险。
+    /// </summary>
+    public bool LockOnLaunch { get; set; } = true;
 }
 
 /// <summary>
@@ -125,17 +134,31 @@ public sealed class SettingsService
     }
 
     /// <summary>
-    /// 列表窗口不在前台自动关闭的分钟数（0 = 不启用）
+    /// 无键鼠输入多少分钟后自动锁定（0 = 不启用）
     /// </summary>
-    public int ListAutoCloseMinutes
+    public int IdleLockMinutes
     {
-        get => Settings.ListAutoCloseMinutes;
+        get => Settings.IdleLockMinutes;
         set
         {
             var clamped = Math.Clamp(value, 0, 120);
-            if (Settings.ListAutoCloseMinutes != clamped)
+            if (Settings.IdleLockMinutes != clamped)
             {
-                Settings.ListAutoCloseMinutes = clamped;
+                Settings.IdleLockMinutes = clamped;
+                SaveSettings();
+            }
+        }
+    }
+
+    /// <summary>进程冷启动时是否立即锁定</summary>
+    public bool LockOnLaunch
+    {
+        get => Settings.LockOnLaunch;
+        set
+        {
+            if (Settings.LockOnLaunch != value)
+            {
+                Settings.LockOnLaunch = value;
                 SaveSettings();
             }
         }

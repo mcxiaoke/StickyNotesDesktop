@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using StickyNotes.Infrastructure;
 using StickyNotes.Models;
 using StickyNotes.Services;
@@ -12,31 +11,34 @@ namespace StickyNotes.Views;
 public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
 {
     private readonly PinService? _pinService;
-    private readonly SettingsService? _settingsService;
-
-    private readonly DispatcherTimer _idleCloseTimer = new() { Interval = TimeSpan.FromMinutes(10) };
+    private readonly SessionLockCoordinator? _sessionLock;
 
     public ArchivedNotesViewModel ViewModel { get; }
 
     public ArchivedNotesWindow(
         ArchivedNotesViewModel viewModel,
         PinService? pinService = null,
-        SettingsService? settingsService = null)
+        SessionLockCoordinator? sessionLock = null)
     {
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
         _pinService = pinService;
-        _settingsService = settingsService;
+        _sessionLock = sessionLock;
         PinOverlay.PinService = pinService;
+
+        // 会话锁是跨窗口共享的单一状态：解锁一次即全会话解锁。
+        // 旧实现在此探测主列表窗口的解锁状态，探测失败时本窗口会**额外再要一次 PIN**。
+        if (_sessionLock != null)
+        {
+            _sessionLock.LockRequested += (_, _) => SyncLockState();
+            _sessionLock.Unlocked += (_, _) => SyncLockState();
+            PinOverlay.Unlocked += (_, _) => _sessionLock.Unlock();
+        }
 
         Loaded += async (_, _) =>
         {
-            // 主列表已解锁可见时视为用户刚验证过身份，避免重复输 PIN；
-            // 否则（列表锁定或已隐藏到托盘）归档窗口打开即锁定
-            bool listUnlocked = Application.Current?.Windows.OfType<NotesListWindow>()
-                .FirstOrDefault() is { IsContentAccessible: true };
-            PinOverlay.IsLocked = (_pinService?.IsPinEnabled ?? false) && !listUnlocked;
+            SyncLockState();
 
             try
             {
@@ -56,29 +58,20 @@ public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
         // 键盘支持（F-P1-10 剩余项）：Ctrl+F 聚焦搜索框（占位文案此前承诺了该快捷键但未实现，N-6）、
         // Esc 清空搜索词；列表内 ↑/↓/Home/End 由 ListBox 原生导航承担。
         PreviewKeyDown += ArchivedNotesWindow_PreviewKeyDown;
+    }
 
-        // 闲时自动关闭：与主列表同一设置项，防止人离开后归档内容长时间暴露在屏幕上
-        _idleCloseTimer.Tick += (_, _) =>
-        {
-            _idleCloseTimer.Stop();
-            if (IsVisible && WindowState != WindowState.Minimized)
-            {
-                AppLog.Info("[ArchivedNotesWindow] 归档窗口长时间不在前台，自动关闭");
-                Close();
-            }
-        };
+    /// <summary>
+    /// 把会话锁状态同步到遮罩。窗口只反映状态，不自行判定锁定时机。
+    /// </summary>
+    private void SyncLockState()
+    {
+        if (_pinService is null) return;
 
-        Activated += (_, _) => _idleCloseTimer.Stop();
-        Deactivated += (_, _) =>
+        PinOverlay.IsLocked = _pinService.IsPinEnabled && (_sessionLock?.IsLocked ?? false);
+        if (PinOverlay.IsLocked && _sessionLock != null)
         {
-            var minutes = _settingsService?.ListAutoCloseMinutes ?? 0;
-            if (minutes > 0 && IsVisible)
-            {
-                _idleCloseTimer.Interval = TimeSpan.FromMinutes(minutes);
-                _idleCloseTimer.Stop();
-                _idleCloseTimer.Start();
-            }
-        };
+            PinOverlay.LockReason = _sessionLock.LockReason;
+        }
     }
 
     /// <summary>

@@ -24,7 +24,8 @@
                        Style="{StaticResource Type.Subtitle}"
                        HorizontalAlignment="Center" />
 
-            <TextBlock Text="输入 PIN 后按 Enter 解锁"
+            <TextBlock x:Name="HintText"
+                       Text="输入 PIN 后按 Enter 解锁"
                        Style="{StaticResource Type.CaptionSubtle}"
                        HorizontalAlignment="Center"
                        Margin="0,6,0,20" />

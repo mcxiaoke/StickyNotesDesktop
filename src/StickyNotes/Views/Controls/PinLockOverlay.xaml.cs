@@ -18,6 +18,31 @@ public partial class PinLockOverlay : UserControl
     /// <summary>解锁成功后触发（宿主无需再做其它事，遮罩自行隐藏）</summary>
     public event EventHandler? Unlocked;
 
+    /// <summary>
+    /// 遮罩提示文案。区分「冷启动即锁」与「闲置自动锁定」，
+    /// 让用户知道是自己设的阈值生效了，而不是误以为程序出了故障。
+    /// </summary>
+    public static readonly DependencyProperty LockReasonProperty =
+        DependencyProperty.Register(
+            nameof(LockReason),
+            typeof(PinLockReason),
+            typeof(PinLockOverlay),
+            new PropertyMetadata(PinLockReason.SessionStart, OnLockReasonChanged));
+
+    public PinLockReason LockReason
+    {
+        get => (PinLockReason)GetValue(LockReasonProperty);
+        set => SetValue(LockReasonProperty, value);
+    }
+
+    private static void OnLockReasonChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not PinLockOverlay overlay) return;
+        overlay.HintText.Text = e.NewValue is PinLockReason.IdleTimeout
+            ? "长时间未操作，已自动锁定"
+            : "输入 PIN 后按 Enter 解锁";
+    }
+
     public PinLockOverlay()
     {
         InitializeComponent();
@@ -89,6 +114,12 @@ public partial class PinLockOverlay : UserControl
         IsLocked = false;
         Unlocked?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>
+    /// 测试钩子：以「验证通过」的完整路径解锁，确保宿主注册的 <see cref="Unlocked"/> 回调被真实触发。
+    /// 绝不能只改 <see cref="IsLocked"/> —— 那会跳过宿主与会话锁之间的联动，测的就不是生产链路。
+    /// </summary>
+    internal void UnlockForTest() => Unlock();
 
     private void ShakeInput()
     {

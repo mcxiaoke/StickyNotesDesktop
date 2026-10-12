@@ -171,7 +171,8 @@ public class SettingsAndBackupTests
               "PinEnabled": true,
               "PinSalt": "",
               "PinHash": "",
-              "ListAutoCloseMinutes": 10
+              "IdleLockMinutes": 10,
+              "LockOnLaunch": true
             }
             """);
 

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows.Data;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Converters;
 
@@ -17,17 +18,17 @@ public sealed class FriendlyDateTimeConverter : IValueConverter
             var diff = now - local;
 
             if (diff.TotalMinutes < 1)
-                return "刚刚";
+                return Loc.T("Time.JustNow", "刚刚");
             if (diff.TotalMinutes < 60)
-                return $"{(int)diff.TotalMinutes} 分钟前";
+                return Loc.T("Time.MinutesAgo", "{0} 分钟前", (int)diff.TotalMinutes);
             if (diff.TotalHours < 24 && now.Date == local.Date)
-                return $"今天 {local:HH:mm}";
+                return Loc.T("Time.Today", "今天 {0}", local.ToString("HH:mm", culture));
             if (now.Date.AddDays(-1) == local.Date)
-                return $"昨天 {local:HH:mm}";
+                return Loc.T("Time.Yesterday", "昨天 {0}", local.ToString("HH:mm", culture));
             if (now.Year == local.Year)
-                return local.ToString("MM-dd HH:mm");
+                return local.ToString("MM-dd HH:mm", culture);
 
-            return local.ToString("yyyy-MM-dd");
+            return local.ToString("yyyy-MM-dd", culture);
         }
 
         return string.Empty;

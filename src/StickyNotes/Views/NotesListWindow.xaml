@@ -4,7 +4,8 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:models="clr-namespace:StickyNotes.Models"
                  xmlns:controls="clr-namespace:StickyNotes.Views.Controls"
-                 Title="彩色便签"
+                 xmlns:loc="clr-namespace:StickyNotes.Services.Localization"
+                 Title="{loc:Loc List.WindowTitle, Default='彩色便签'}"
                  Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                  Width="480" Height="720"
                  MinWidth="380" MinHeight="520"
@@ -23,7 +24,7 @@
 
         <!-- 0. Fluent 标题栏 -->
         <ui:TitleBar Grid.Row="0"
-                     Title="彩色便签"
+                     Title="{loc:Loc List.WindowTitle, Default='彩色便签'}"
                      Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                      ShowMaximize="True"
                      ShowMinimize="True" />
@@ -55,7 +56,7 @@
                            RenderOptions.BitmapScalingMode="HighQuality"
                            Margin="0,0,10,0"
                            VerticalAlignment="Center" />
-                    <TextBlock Text="便签"
+                    <TextBlock Text="{loc:Loc List.Heading, Default='便签'}"
                                Style="{StaticResource Type.TitleLarge}" />
                 </StackPanel>
 
@@ -64,10 +65,10 @@
                     <!-- 手动立即同步按钮（协议设计 §6 触发时机 5） -->
                     <ui:Button x:Name="SyncNowButton"
                                Appearance="Secondary"
-                               Content="立即同步"
+                               Content="{loc:Loc Sync.Now, Default='立即同步'}"
                                Height="32"
                                Padding="10,0"
-                               ToolTip="立即与云端同步一次"
+                               ToolTip="{loc:Loc Sync.NowTooltip, Default='立即与云端同步一次'}"
                                Margin="0,0,6,0"
                                Click="SyncNowButton_Click">
                         <ui:Button.Icon>
@@ -77,10 +78,10 @@
 
                     <!-- 已归档入口按钮 -->
                     <ui:Button Appearance="Secondary"
-                               Content="已归档"
+                               Content="{loc:Loc List.Archived, Default='已归档'}"
                                Height="32"
                                Padding="10,0"
-                               ToolTip="查看已归档便签"
+                               ToolTip="{loc:Loc List.ArchivedTooltip, Default='查看已归档便签'}"
                                Margin="0,0,6,0"
                                Click="OpenArchiveButton_Click">
                         <ui:Button.Icon>
@@ -90,10 +91,10 @@
 
                     <!-- 设置入口按钮 -->
                     <ui:Button Appearance="Secondary"
-                               Content="设置"
+                               Content="{loc:Loc Common.Settings, Default='设置'}"
                                Height="32"
                                Padding="10,0"
-                               ToolTip="设置"
+                               ToolTip="{loc:Loc Common.SettingsTooltip, Default='设置'}"
                                Margin="0,0,6,0"
                                Click="OpenSettingsButton_Click">
                         <ui:Button.Icon>
@@ -103,10 +104,10 @@
 
                     <!-- 新建便签按钮 (Windows 11 Accent 胶囊) -->
                     <ui:Button Appearance="Primary"
-                               Content="新建"
+                               Content="{loc:Loc Tray.NewNote, Default='新建'}"
                                Height="32"
                                Padding="12,0"
-                               ToolTip="新建一张便签 (Ctrl+N)"
+                               ToolTip="{loc:Loc List.NewTooltip, Default='新建一张便签 (Ctrl+N)'}"
                                Command="{Binding NewNoteCommand}">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="Add24" FontSize="15" />
@@ -120,7 +121,7 @@
             <!-- 1.2 现代 Fluent 搜索栏 -->
             <ui:TextBox x:Name="SearchBox"
                         Grid.Row="1"
-                        PlaceholderText="搜索便签内容... (Ctrl+F)"
+                        PlaceholderText="{loc:Loc List.SearchPlaceholder, Default='搜索便签内容... (Ctrl+F)'}"
                         ClearButtonEnabled="True"
                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         FontSize="13"
@@ -149,7 +150,7 @@
                                          IsChecked="True"
                                          Checked="FilterAllRadio_Checked">
                                 <TextBlock>
-                                    <Run Text="全部" />
+                                    <Run Text="{loc:Loc Filter.All, Default='全部'}" />
                                     <Run Text=" (" /><Run Text="{Binding Notes.Count, Mode=OneWay}" /><Run Text=")" />
                                 </TextBlock>
                             </RadioButton>
@@ -162,7 +163,7 @@
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="Pin16" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center" />
                                     <TextBlock VerticalAlignment="Center">
-                                        <Run Text="已置顶" />
+                                        <Run Text="{loc:Loc Filter.Pinned, Default='已置顶'}" />
                                         <Run Text=" (" /><Run Text="{Binding PinnedNotesCount, Mode=OneWay}" /><Run Text=")" />
                                     </TextBlock>
                                 </StackPanel>
@@ -176,7 +177,7 @@
                                TextWrapping="NoWrap"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center"
-                               Text="双击卡片打开" />
+                               Text="{loc:Loc List.DoubleClickHint, Default='双击卡片打开'}" />
                 </Grid>
 
                 <!-- 搜索状态：显示命中统计提示（卡片数与便签数分离，扁平多卡片时明确来源） -->
@@ -263,18 +264,18 @@
 
                                         <Border.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem Header="打开便签" Click="ContextOpenNote_Click">
+                                                <MenuItem Header="{loc:Loc Context.OpenNote, Default='打开便签'}" Click="ContextOpenNote_Click">
                                                     <MenuItem.Icon>
                                                         <ui:SymbolIcon Symbol="Open20" FontSize="16" />
                                                     </MenuItem.Icon>
                                                 </MenuItem>
-                                                <MenuItem Header="切换列表置顶" Click="ContextTogglePin_Click">
+                                                <MenuItem Header="{loc:Loc Context.TogglePin, Default='切换列表置顶'}" Click="ContextTogglePin_Click">
                                                     <MenuItem.Icon>
                                                         <ui:SymbolIcon Symbol="Pin20" FontSize="16" />
                                                     </MenuItem.Icon>
                                                 </MenuItem>
                                                 <Separator />
-                                                <MenuItem Header="归档便签" Click="ContextDeleteNote_Click" Foreground="{StaticResource Fluent.DangerBrush}">
+                                                <MenuItem Header="{loc:Loc Context.ArchiveNote, Default='归档便签'}" Click="ContextDeleteNote_Click" Foreground="{StaticResource Fluent.DangerBrush}">
                                                     <MenuItem.Icon>
                                                         <ui:SymbolIcon Symbol="Archive20" FontSize="16" Foreground="{StaticResource Fluent.DangerBrush}" />
                                                     </MenuItem.Icon>
@@ -321,8 +322,8 @@
                                                                    Foreground="{Binding Color, Converter={StaticResource NoteColorToAccentConverter}}"
                                                                    Visibility="{Binding IsPinnedInList, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                     <Button Style="{StaticResource StickyToolbarButtonStyle}"
-                                                            ToolTip="便签操作"
-                                                            AutomationProperties.Name="便签操作"
+                                                            ToolTip="{loc:Loc Context.NoteActions, Default='便签操作'}"
+                                                            AutomationProperties.Name="{loc:Loc Context.NoteActions, Default='便签操作'}"
                                                             Click="CardMoreButton_Click">
                                                         <ui:SymbolIcon Symbol="MoreHorizontal20"
                                                                        FontSize="14"
@@ -343,7 +344,7 @@
                                                            Style="{StaticResource Type.CaptionSubtle}"
                                                            Foreground="{Binding Color, Converter={StaticResource NoteColorToSecondaryTextConverter}}"
                                                            VerticalAlignment="Center">
-                                                    <Run Text="{Binding Content.Length, Mode=OneWay}" /><Run Text=" 字符" />
+                                                    <Run Text="{Binding Content.Length, Mode=OneWay}" /><Run Text="{loc:Loc List.CharUnit, Default=' 字符'}" />
                                                 </TextBlock>
 
                                                 <!-- 友好更新时间 -->
@@ -366,18 +367,18 @@
                             IsHitTestVisible="{Binding HasNoNotes}"
                             Visibility="{Binding HasNoNotes, Converter={StaticResource BoolToVisibilityConverter}}">
                     <ui:SymbolIcon Symbol="Note24" FontSize="48" Foreground="{StaticResource Fluent.TextTertiaryBrush}" Margin="0,0,0,12" />
-                    <TextBlock Text="还没有任何便签"
+                    <TextBlock Text="{loc:Loc List.EmptyTitle, Default='还没有任何便签'}"
                                Style="{StaticResource Type.Subtitle}"
                                Foreground="{StaticResource Fluent.TextSecondaryBrush}"
                                HorizontalAlignment="Center" />
-                    <TextBlock Text="点击上方“新建便签”随时记录你的灵感与任务"
+                    <TextBlock Text="{loc:Loc List.EmptySubtitle, Default='点击上方“新建便签”随时记录你的灵感与任务'}"
                                Style="{StaticResource Type.Caption}"
                                Foreground="{StaticResource Fluent.TextTertiaryBrush}"
                                Margin="0,6,0,16"
                                HorizontalAlignment="Center" />
                     <ui:Button Appearance="Secondary"
                                Icon="Add24"
-                               Content="立即创建第一张便签"
+                               Content="{loc:Loc List.EmptyAction, Default='立即创建第一张便签'}"
                                HorizontalAlignment="Center"
                                Command="{Binding NewNoteCommand}" />
                 </StackPanel>
@@ -561,11 +562,11 @@
                                 </Style>
                             </StackPanel.Style>
                             <ui:SymbolIcon Symbol="Search24" FontSize="44" Foreground="{StaticResource Fluent.TextTertiaryBrush}" Margin="0,0,0,10" />
-                            <TextBlock Text="未找到匹配的便签"
+                            <TextBlock Text="{loc:Loc Search.EmptyTitle, Default='未找到匹配的便签'}"
                                        Style="{StaticResource Type.Subtitle}"
                                        Foreground="{StaticResource Fluent.TextSecondaryBrush}"
                                        HorizontalAlignment="Center" />
-                            <TextBlock Text="请尝试更换关键字或检查拼写"
+                            <TextBlock Text="{loc:Loc Search.EmptySubtitle, Default='请尝试更换关键字或检查拼写'}"
                                        Style="{StaticResource Type.Caption}"
                                        Foreground="{StaticResource Fluent.TextTertiaryBrush}"
                                        Margin="0,4,0,0"

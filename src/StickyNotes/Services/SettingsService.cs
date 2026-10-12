@@ -72,6 +72,16 @@ public sealed class AppSettings
     /// 这是防「退出再重开绕过锁定」的唯一防线，关闭前应明确告知风险。
     /// </summary>
     public bool LockOnLaunch { get; set; } = true;
+
+    /// <summary>
+    /// 界面语言：<c>auto</c>（跟随系统）或具体语言代码（zh-CN / en-US …）。
+    /// </summary>
+    /// <remarks>
+    /// 默认值刻意取 <c>zh-CN</c> 而非 <c>auto</c>：老用户升级后界面语言必须保持不变，
+    /// 这是兼容性底线。<c>auto</c> 作为设置页的可选项存在，不作为出厂默认。
+    /// System.Text.Json 反序列化时缺失字段自动落回该默认值，旧 settings.json 无需迁移。
+    /// </remarks>
+    public string Language { get; set; } = Localization.I18nService.SourceLanguage;
 }
 
 /// <summary>
@@ -159,6 +169,24 @@ public sealed class SettingsService
             if (Settings.LockOnLaunch != value)
             {
                 Settings.LockOnLaunch = value;
+                SaveSettings();
+            }
+        }
+    }
+
+    /// <summary>界面语言（auto / zh-CN / en-US …），空值视为跟随系统</summary>
+    public string Language
+    {
+        get => Settings.Language;
+        set
+        {
+            var normalized = string.IsNullOrWhiteSpace(value)
+                ? Localization.I18nService.AutoLanguage
+                : value;
+
+            if (!string.Equals(Settings.Language, normalized, StringComparison.OrdinalIgnoreCase))
+            {
+                Settings.Language = normalized;
                 SaveSettings();
             }
         }

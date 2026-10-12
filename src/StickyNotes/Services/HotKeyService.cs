@@ -3,6 +3,7 @@ using System.Windows.Interop;
 using CommunityToolkit.Mvvm.Messaging;
 using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Services;
 
@@ -75,8 +76,10 @@ public sealed class HotKeyService : IDisposable
         // 失败的键在下次开关热键或重进设置时自动重试。
         // 原实现用单个 _isRegistered 布尔：部分成功后再调用本方法会整体短路，
         // 失败的那一个键永远没有重试机会（N-11）。
-        TryRegisterHotKey(handle, HotKeyId_NewNote, modifiers, NativeMethods.VK_N, "Win+Alt+N", "快速新建");
-        TryRegisterHotKey(handle, HotKeyId_ShowList, modifiers, NativeMethods.VK_H, "Win+Alt+H", "呼出列表");
+        TryRegisterHotKey(handle, HotKeyId_NewNote, modifiers, NativeMethods.VK_N, "Win+Alt+N",
+            Loc.T("HotKey.NewNote", "快速新建"));
+        TryRegisterHotKey(handle, HotKeyId_ShowList, modifiers, NativeMethods.VK_H, "Win+Alt+H",
+            Loc.T("HotKey.ShowList", "呼出列表"));
 
         AppLog.Info($"[HotKeyService] 全局热键注册结果: 已成功 {_registeredIds.Count}/2");
     }

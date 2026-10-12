@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
 using StickyNotes.Models;
+using StickyNotes.Services.Localization;
 using StickyNotes.ViewModels;
 
 namespace StickyNotes.Views;
@@ -118,10 +119,11 @@ public partial class NoteWindow : Window
             {
                 var choice = MessageBox.Show(
                     this,
-                    "便签内容尚未成功保存（可能是磁盘已满或文件被占用）。\n\n" +
-                    "「确定」：放弃本次更改并关闭窗口；\n" +
-                    "「取消」：留在便签，稍后点击底部状态栏重试，或先复制正文再手动关闭。",
-                    "保存失败",
+                    Loc.T("Note.Error.SaveFailedBody",
+                        "便签内容尚未成功保存（可能是磁盘已满或文件被占用）。\n\n" +
+                        "「确定」：放弃本次更改并关闭窗口；\n" +
+                        "「取消」：留在便签，稍后点击底部状态栏重试，或先复制正文再手动关闭。"),
+                    Loc.T("Note.Error.SaveFailedTitle", "保存失败"),
                     MessageBoxButton.OKCancel,
                     MessageBoxImage.Warning);
 
@@ -222,7 +224,8 @@ public partial class NoteWindow : Window
             {
                 // 数据库/IO 异常不允许打到 async void 崩溃进程（P2-5）
                 AppLog.Error($"[NoteWindow] 修改便签颜色失败: {ex.Message}", ex);
-                MessageBox.Show(this, $"修改颜色失败：{ex.Message}", "操作失败",
+                MessageBox.Show(this, Loc.T("Note.Error.ColorFailed", "修改颜色失败：{0}", ex.Message),
+                    Loc.T("Common.OperationFailed", "操作失败"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -284,7 +287,8 @@ public partial class NoteWindow : Window
             // 归档未落库时保留窗口并给出提示，避免用户误以为删除成功（P2-5）；
             // 原实现在此异常时其后的 Close() 不执行，窗口滞留却无任何反馈
             AppLog.Error($"[NoteWindow] 删除便签失败: {ex.Message}", ex);
-            MessageBox.Show(this, $"删除便签失败：{ex.Message}", "操作失败",
+            MessageBox.Show(this, Loc.T("Note.Error.DeleteFailed", "删除便签失败：{0}", ex.Message),
+                Loc.T("Common.OperationFailed", "操作失败"),
                 MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }

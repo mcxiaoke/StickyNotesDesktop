@@ -10,6 +10,7 @@ using H.NotifyIcon;
 using H.NotifyIcon.Core;
 using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Services;
 
@@ -24,10 +25,18 @@ public sealed class TrayIconService : IDisposable
     private HwndSource? _activationHelperHwnd;
     private bool _isDisposed;
 
+    // 托盘菜单项引用：语言切换时用于改写文案（代码构建的 UI 不参与 XAML 绑定刷新）
+    private MenuItem? _menuNew;
+    private MenuItem? _menuOpen;
+    private MenuItem? _menuSettings;
+    private MenuItem? _menuExit;
+
     public TrayIconService(WindowManager windowManager, SettingsService settingsService)
     {
         _windowManager = windowManager;
         _settingsService = settingsService;
+
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) => RefreshTrayTexts());
     }
 
     /// <summary>
@@ -55,7 +64,7 @@ public sealed class TrayIconService : IDisposable
         // 会被幂等地执行多次；再绑 DoubleClickCommand 只会让同一次双击触发三遍激活（N-5）。
         _taskbarIcon = new TaskbarIcon
         {
-            ToolTipText = "彩色便签",
+            ToolTipText = Loc.T("Tray.Tooltip", "彩色便签"),
             MenuActivation = PopupActivationMode.RightClick,
             LeftClickCommand = new RelayCommand(OpenOrActivateListWindow)
         };
@@ -191,21 +200,25 @@ public sealed class TrayIconService : IDisposable
         var contextMenu = new ContextMenu();
 
         // 菜单仅保留四个常用动作，文案求短，功能与行为保持原样不变。
-        var itemNew = new MenuItem { Header = "新建" };
+        // 托盘菜单是代码构建的，不走 XAML 绑定，故语言切换时需手工改写 Header（见 RefreshTrayTexts）。
+        var itemNew = new MenuItem { Header = Loc.T("Tray.NewNote", "新建") };
         itemNew.Click += (_, _) => WeakReferenceMessenger.Default.Send(new NewNoteRequestedMessage());
         contextMenu.Items.Add(itemNew);
+        _menuNew = itemNew;
 
-        var itemList = new MenuItem { Header = "打开" };
+        var itemList = new MenuItem { Header = Loc.T("Tray.Open", "打开") };
         itemList.Click += (_, _) => WeakReferenceMessenger.Default.Send(new ShowNotesListRequestedMessage());
         contextMenu.Items.Add(itemList);
+        _menuOpen = itemList;
 
-        var itemSettings = new MenuItem { Header = "设置" };
+        var itemSettings = new MenuItem { Header = Loc.T("Tray.Settings", "设置") };
         itemSettings.Click += (_, _) => _windowManager.OpenOrActivateSettingsWindow();
         contextMenu.Items.Add(itemSettings);
+        _menuSettings = itemSettings;
 
         contextMenu.Items.Add(new Separator());
 
-        var itemExit = new MenuItem { Header = "退出" };
+        var itemExit = new MenuItem { Header = Loc.T("Tray.Exit", "退出") };
         itemExit.Click += (_, _) =>
         {
             AppLog.Info("[TrayIconService] 用户点击托盘退出菜单");
@@ -221,8 +234,26 @@ public sealed class TrayIconService : IDisposable
             Application.Current.Shutdown();
         };
         contextMenu.Items.Add(itemExit);
+        _menuExit = itemExit;
 
         return contextMenu;
+    }
+
+    /// <summary>
+    /// 界面语言切换后改写托盘图标提示与菜单文案。
+    /// 托盘菜单与 ToolTip 均为代码构建，不参与 XAML 绑定刷新，必须手工同步。
+    /// </summary>
+    private void RefreshTrayTexts()
+    {
+        if (_taskbarIcon != null)
+        {
+            _taskbarIcon.ToolTipText = Loc.T("Tray.Tooltip", "彩色便签");
+        }
+
+        if (_menuNew != null) _menuNew.Header = Loc.T("Tray.NewNote", "新建");
+        if (_menuOpen != null) _menuOpen.Header = Loc.T("Tray.Open", "打开");
+        if (_menuSettings != null) _menuSettings.Header = Loc.T("Tray.Settings", "设置");
+        if (_menuExit != null) _menuExit.Header = Loc.T("Tray.Exit", "退出");
     }
 
     public void Dispose()

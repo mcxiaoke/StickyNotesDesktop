@@ -6,6 +6,7 @@ using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
 using StickyNotes.Models;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.ViewModels;
 
@@ -112,9 +113,11 @@ public partial class NoteViewModel : ObservableObject
     /// </summary>
     public string SaveStatusText => SaveState switch
     {
-        NoteSaveState.Pending => "保存中…",
-        NoteSaveState.Failed => "保存失败，点击重试",
-        _ => LastSavedAt.HasValue ? $"已同步 {LastSavedAt.Value:HH:mm:ss}" : "已同步"
+        NoteSaveState.Pending => Loc.T("Note.SaveState.Saving", "保存中…"),
+        NoteSaveState.Failed => Loc.T("Note.SaveState.Failed", "保存失败，点击重试"),
+        _ => LastSavedAt.HasValue
+            ? Loc.T("Note.SaveState.Synced", "已同步 {0}", LastSavedAt.Value.ToString("HH:mm:ss"))
+            : Loc.T("Note.SaveState.SyncedNoTime", "已同步")
     };
 
     public NoteViewModel(
@@ -133,6 +136,10 @@ public partial class NoteViewModel : ObservableObject
         {
             FontSize = msg.Value;
         });
+
+        // 底部保存状态文案随界面语言变化，需显式重发通知
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) =>
+            OnPropertyChanged(nameof(SaveStatusText)));
     }
 
     /// <summary>

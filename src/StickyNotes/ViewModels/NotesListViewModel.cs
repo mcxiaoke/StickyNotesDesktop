@@ -7,6 +7,7 @@ using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
 using StickyNotes.Models;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.ViewModels;
 
@@ -57,12 +58,41 @@ public partial class NotesListViewModel : ObservableObject, IDisposable
     public string SearchStatusText => SearchHitCount == 0
         ? string.Empty
         : SearchHitCount == SearchNoteCount
-            ? $"找到 {SearchHitCount} 条匹配便签 (回车或点击直达)"
-            : $"找到 {SearchHitCount} 条结果 (来自 {SearchNoteCount} 张便签，回车或点击直达)";
+            ? Loc.T("Search.StatusSimple", "找到 {0} 条匹配便签 (回车或点击直达)", SearchHitCount)
+            : Loc.T("Search.StatusWithNotes",
+                "找到 {0} 条结果 (来自 {1} 张便签，回车或点击直达)", SearchHitCount, SearchNoteCount);
 
     partial void OnSearchHitCountChanged(int value) => OnPropertyChanged(nameof(SearchStatusText));
 
     partial void OnSearchNoteCountChanged(int value) => OnPropertyChanged(nameof(SearchStatusText));
+
+    /// <summary>语言切换后重发所有派生自语言包的属性通知。</summary>
+    private void RefreshLocalizedText()
+    {
+        OnPropertyChanged(nameof(SearchStatusText));
+
+        // Note.PreviewText / DisplayTitle 是按需计算的只读属性，需逐条显式通知
+        foreach (var note in _repository is null ? Array.Empty<Note>() : AllNotesSnapshot())
+        {
+            note.NotifyLocalizedTextChanged();
+        }
+
+        // SearchHit 是不可变 record，其 BadgeText 依赖当前语言；ListBox 不会因集合未变而重算，
+        // 故强制清空后重新加入，让容器重建并重新读取绑定。
+        if (SearchResults.Count > 0)
+        {
+            var snapshot = SearchResults.ToArray();
+            SearchResults.Clear();
+            foreach (var hit in snapshot)
+            {
+                SearchResults.Add(hit);
+            }
+        }
+
+        OnPropertyChanged(nameof(FilteredNotes));
+    }
+
+    private IEnumerable<Note> AllNotesSnapshot() => FilteredNotes as Note[] ?? FilteredNotes.ToArray();
 
     [ObservableProperty]
     private bool _hasNoNotes;
@@ -96,6 +126,21 @@ public partial class NotesListViewModel : ObservableObject, IDisposable
         });
         WeakReferenceMessenger.Default.Register<NoteArchivedMessage>(this, (_, msg) => HandleNoteDeleted(msg.Value));
         WeakReferenceMessenger.Default.Register<NoteRestoredMessage>(this, (_, msg) => HandleNoteRestored(msg.Value));
+
+        // 界面语言切换：搜索状态文案与便签卡片预览（Note.PreviewText / SearchHit.BadgeText）
+        // 均为普通 CLR 属性，不会随 XAML 绑定自动刷新，必须显式重发通知。
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) =>
+        {
+            var app = System.Windows.Application.Current;
+            if (app != null && !app.Dispatcher.CheckAccess())
+            {
+                app.Dispatcher.BeginInvoke(RefreshLocalizedText);
+            }
+            else
+            {
+                RefreshLocalizedText();
+            }
+        });
         WeakReferenceMessenger.Default.Register<NewNoteRequestedMessage>(this, (_, _) =>
         {
             var app = System.Windows.Application.Current;

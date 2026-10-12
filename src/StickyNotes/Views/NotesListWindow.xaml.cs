@@ -9,6 +9,7 @@ using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
 using StickyNotes.Models;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 using StickyNotes.ViewModels;
 // 刻意只按类型别名引入 Wpf.Ui 的这两个类型，而不写 `using Wpf.Ui.Controls;`：
 // 两个命名空间都定义了 MenuItem，整条 using 会让本文件里既有的 MenuItem 判定
@@ -260,7 +261,7 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
             catch (Exception ex)
             {
                 AppLog.Error($"[NotesListWindow] 置顶便签 {note.Id} 失败: {ex.Message}", ex);
-                ShowInfoBar($"置顶失败：{ex.Message}", InfoBarSeverity.Error);
+                ShowInfoBar(Loc.T("List.Error.PinFailed", "置顶失败：{0}", ex.Message), InfoBarSeverity.Error);
             }
         }
     }
@@ -286,20 +287,23 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
 
         if (_syncHost == null)
         {
-            ShowInfoBar("同步功能尚未初始化", InfoBarSeverity.Warning);
+            ShowInfoBar(Loc.T("Sync.ErrorNotInitialized", "同步功能尚未初始化"), InfoBarSeverity.Warning);
             return;
         }
 
         var sync = _settingsService?.Settings.Sync;
         if (sync == null || !sync.Enabled)
         {
-            ShowInfoBar("请先在「设置 → 网络同步」中启用同步", InfoBarSeverity.Informational);
+            ShowInfoBar(Loc.T("Sync.ErrorNotEnabled", "请先在「设置 → 网络同步」中启用同步"),
+                InfoBarSeverity.Informational);
             return;
         }
 
         if (!sync.IsConfigured)
         {
-            ShowInfoBar("同步服务器信息尚未填写完整，请先在「设置 → 网络同步」中配置并保存", InfoBarSeverity.Informational);
+            ShowInfoBar(Loc.T("Sync.ErrorServerIncomplete",
+                    "同步服务器信息尚未填写完整，请先在「设置 → 网络同步」中配置并保存"),
+                InfoBarSeverity.Informational);
             return;
         }
 
@@ -314,8 +318,8 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
                 var error = _syncHost.CurrentState.LastError;
                 ShowInfoBar(
                     string.IsNullOrEmpty(error)
-                        ? "本次同步未执行（上一轮同步尚未结束）"
-                        : $"同步失败：{error}",
+                        ? Loc.T("Sync.ResultSkipped", "本次同步未执行（上一轮同步尚未结束）")
+                        : Loc.T("Sync.ErrorFailed", "同步失败：{0}", error),
                     InfoBarSeverity.Warning);
                 return;
             }
@@ -324,14 +328,18 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
             var uploadFailed = summary.UploadFailedIds.Count;
             ShowInfoBar(
                 uploadFailed > 0
-                    ? $"同步完成 · 下行 {summary.Downloaded} · 上传 {summary.Uploaded} · 上传失败 {uploadFailed}（下轮自动重试）"
-                    : $"同步完成 · 下行 {summary.Downloaded} · 上传 {summary.Uploaded} · 守卫跳过 {summary.GuardedSkipped}",
+                    ? Loc.T("Sync.ResultDoneWithUploadFailure",
+                        "同步完成 · 下行 {0} · 上传 {1} · 上传失败 {2}（下轮自动重试）",
+                        summary.Downloaded, summary.Uploaded, uploadFailed)
+                    : Loc.T("Sync.ResultDone",
+                        "同步完成 · 下行 {0} · 上传 {1} · 守卫跳过 {2}",
+                        summary.Downloaded, summary.Uploaded, summary.GuardedSkipped),
                 uploadFailed > 0 ? InfoBarSeverity.Warning : InfoBarSeverity.Success);
         }
         catch (Exception ex)
         {
             AppLog.Error($"[NotesListWindow] 手动同步异常: {ex.Message}", ex);
-            ShowInfoBar($"同步失败：{ex.Message}", InfoBarSeverity.Error);
+            ShowInfoBar(Loc.T("Sync.ErrorFailed", "同步失败：{0}", ex.Message), InfoBarSeverity.Error);
         }
         finally
         {
@@ -369,7 +377,9 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
     private void SetSyncNowBusy(bool busy)
     {
         SyncNowButton.IsEnabled = !busy;
-        SyncNowButton.Content = busy ? "同步中…" : "立即同步";
+        SyncNowButton.Content = busy
+            ? Loc.T("Sync.Syncing", "同步中…")
+            : Loc.T("Sync.Now", "立即同步");
     }
 
     private void OpenSettingsButton_Click(object sender, RoutedEventArgs e)
@@ -388,7 +398,7 @@ public partial class NotesListWindow : Wpf.Ui.Controls.FluentWindow
             catch (Exception ex)
             {
                 AppLog.Error($"[NotesListWindow] 归档便签 {note.Id} 失败: {ex.Message}", ex);
-                ShowInfoBar($"归档失败：{ex.Message}", InfoBarSeverity.Error);
+                ShowInfoBar(Loc.T("List.Error.ArchiveFailed", "归档失败：{0}", ex.Message), InfoBarSeverity.Error);
             }
         }
     }

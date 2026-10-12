@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Models;
 
@@ -46,7 +47,9 @@ public sealed record SearchHit(
         get
         {
             var lineNo = string.IsNullOrEmpty(DisplayLineNumber) ? LineNumber.ToString() : DisplayLineNumber;
-            return TotalMatches > 1 ? $"第 {lineNo} 行 · 共 {TotalMatches} 处" : $"第 {lineNo} 行";
+            return TotalMatches > 1
+                ? Loc.T("Search.BadgeMulti", "第 {0} 行 · 共 {1} 处", lineNo, TotalMatches)
+                : Loc.T("Search.BadgeSingle", "第 {0} 行", lineNo);
         }
     }
 }

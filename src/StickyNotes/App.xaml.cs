@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using StickyNotes.Data;
 using StickyNotes.Infrastructure;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 using StickyNotes.Sync;
 using StickyNotes.ViewModels;
 using StickyNotes.Views;
@@ -93,6 +94,20 @@ public partial class App : Application
         var services = new ServiceCollection();
         ConfigureServices(services);
         _serviceProvider = services.BuildServiceProvider();
+
+        // 4a. 应用界面语言。必须早于数据库初始化与任何窗口创建 ——
+        // 连「启动失败」弹窗都应使用用户选定的语言，否则语言设置对启动期报错完全无效。
+        // 解析 SettingsService 会首次读取 settings.json，此处只读不写，不影响原子写语义。
+        try
+        {
+            var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
+            I18nService.EnsureInstance().Init(settingsService.Language);
+        }
+        catch (Exception ex)
+        {
+            // 语言加载失败绝不能阻断启动：语言包问题不该让用户的便签打不开
+            AppLog.Error($"[App] 界面语言初始化失败，已回退默认语言（应用继续启动）: {ex.Message}", ex);
+        }
 
         // 5. 初始化数据库与执行 PRAGMA 增量迁移。
         // 整个启动链必须显式兜底：OnStartup 是 async void，若在此处抛异常，
@@ -240,12 +255,14 @@ public partial class App : Application
         try
         {
             MessageBox.Show(
-                "StickyNotes 启动失败，已安全退出。\n\n" +
-                $"原因：{ex.Message}\n\n" +
-                $"数据库：{databasePath}\n" +
-                $"日志：{AppPaths.LogsDirectory}\n\n" +
-                "可尝试：从 backups/ 目录恢复一份备份，或重命名数据库文件后重新启动。",
-                "启动失败",
+                Loc.T("App.StartupFailedBody",
+                    "StickyNotes 启动失败，已安全退出。\n\n" +
+                    $"原因：{ex.Message}\n\n" +
+                    $"数据库：{databasePath}\n" +
+                    $"日志：{AppPaths.LogsDirectory}\n\n" +
+                    "可尝试：从 backups/ 目录恢复一份备份，或重命名数据库文件后重新启动。",
+                    ex.Message, databasePath, AppPaths.LogsDirectory),
+                Loc.T("App.StartupFailedTitle", "启动失败"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -322,6 +339,7 @@ public partial class App : Application
         services.AddSingleton<INoteRepository, NoteRepository>();
 
         // 领域服务与配置
+        services.AddSingleton(I18nService.EnsureInstance());
         services.AddSingleton<SettingsService>();
         services.AddSingleton<PinService>();
         // 会话级空闲锁：必须在各窗口之前注册，使锁定状态成为进程内唯一真相源。

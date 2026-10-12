@@ -1,5 +1,6 @@
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Models;
 
@@ -92,6 +93,20 @@ public sealed partial class Note : ObservableObject
 
     public double WindowX { get; set; } = DefaultWindowX;
     public double WindowY { get; set; } = DefaultWindowY;
+    /// <summary>
+    /// 通知派生自语言包的只读属性重算。
+    /// </summary>
+    /// <remarks>
+    /// <see cref="PreviewText"/> 与 <see cref="DisplayTitle"/> 是按需计算的普通属性，
+    /// 不参与 <see cref="SetProperty"/>，因此界面语言切换时不会自动刷新，
+    /// 必须由调用方（语言切换链路）显式触发。
+    /// </remarks>
+    internal void NotifyLocalizedTextChanged()
+    {
+        OnPropertyChanged(nameof(PreviewText));
+        OnPropertyChanged(nameof(DisplayTitle));
+    }
+
     public double WindowWidth { get; set; } = DefaultWindowWidth;
     public double WindowHeight { get; set; } = DefaultWindowHeight;
     public bool IsOpen { get; set; } = true;
@@ -110,7 +125,9 @@ public sealed partial class Note : ObservableObject
     /// <summary>
     /// 纯文本卡片显示：去除首尾空白，按需显示1~4行；无内容时显示“（空白便签）”
     /// </summary>
-    public string PreviewText => string.IsNullOrWhiteSpace(Content) ? "（空白便签）" : Content.Trim();
+    public string PreviewText => string.IsNullOrWhiteSpace(Content)
+        ? Loc.T("Note.EmptyPreview", "（空白便签）")
+        : Content.Trim();
 
     /// <summary>
     /// 动态计算标题：智能扫描第一行非空白文本，截取最多 40 字符；无内容时显示“（空白便签）”
@@ -120,7 +137,7 @@ public sealed partial class Note : ObservableObject
         get
         {
             if (string.IsNullOrWhiteSpace(Content))
-                return "（空白便签）";
+                return Loc.T("Note.EmptyPreview", "（空白便签）");
 
             using var reader = new StringReader(Content);
             string? line;
@@ -133,7 +150,7 @@ public sealed partial class Note : ObservableObject
                 }
             }
 
-            return "（空白便签）";
+            return Loc.T("Note.EmptyPreview", "（空白便签）");
         }
     }
 

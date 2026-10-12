@@ -30,6 +30,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      语言包以「嵌入主程序集」而非 .resx 卫星程序集方式加载。
+      原因：Costura.Fody 在 MSBuild 生成 *.resources.dll 之前运行，无法嵌入卫星程序集
+      （Fody/Costura#61），且 PublishSingleFile 会把卫星程序集留在解压根目录导致解析失败。
+      EmbeddedResource 进的是本程序集自身清单资源，Costura 不介入，单文件发布亦无影响。
+    -->
+    <EmbeddedResource Include="Resources\Locales\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- 便携模式样例文件 -->
     <None Include="Samples\portable.sample.ini" Link="portable.sample.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

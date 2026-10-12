@@ -96,3 +96,15 @@ public sealed class HotKeyConfigChangedMessage : ValueChangedMessage<bool>
 {
     public HotKeyConfigChangedMessage(bool enabled) : base(enabled) { }
 }
+
+/// <summary>
+/// 界面语言切换消息（值 = 生效的语言代码）
+/// </summary>
+/// <remarks>
+/// 用弱引用总线而非裸事件，与本项目既有解耦方式保持一致；
+/// 订阅方需在窗口关闭时自行退订（弱引用总线不会阻止回收，但仍应保持习惯）。
+/// </remarks>
+public sealed class LanguageChangedMessage : ValueChangedMessage<string>
+{
+    public LanguageChangedMessage(string language) : base(language) { }
+}

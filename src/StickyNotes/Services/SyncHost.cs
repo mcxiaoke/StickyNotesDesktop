@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using StickyNotes.Data;
 using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
+using StickyNotes.Services.Localization;
 using StickyNotes.Sync;
 
 namespace StickyNotes.Services;
@@ -146,7 +147,8 @@ public sealed class SyncHost : IDisposable
                 {
                     s.LastSuccessAt = DateTime.UtcNow;
                     s.LastError = uploadFailed > 0
-                        ? $"本轮有 {uploadFailed} 条便签上传失败，将在下一轮同步自动重试"
+                        ? Loc.T("Sync.PartialUploadFailed",
+                            "本轮有 {0} 条便签上传失败，将在下一轮同步自动重试", uploadFailed)
                         : null;
                     s.LastAttemptAt = DateTime.UtcNow;
                     s.LastUploadedCount = summary.Uploaded;

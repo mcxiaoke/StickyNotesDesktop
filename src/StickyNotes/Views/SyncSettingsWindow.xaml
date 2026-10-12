@@ -2,7 +2,8 @@
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 Title="同步设置"
+                 xmlns:loc="clr-namespace:StickyNotes.Services.Localization"
+                 Title="{loc:Loc Sync.WindowTitle, Default='同步设置'}"
                  Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                  Width="480" Height="640"
                  MinWidth="420" MinHeight="520"
@@ -21,7 +22,7 @@
 
         <!-- 0. Fluent 标题栏 -->
         <ui:TitleBar Grid.Row="0"
-                     Title="同步设置"
+                     Title="{loc:Loc Sync.WindowTitle, Default='同步设置'}"
                      Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                      ShowMaximize="False"
                      ShowMinimize="True" />
@@ -29,7 +30,7 @@
         <!-- 1. 同步设置内容滚动区 -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="{StaticResource Thickness.PageMargin}">
-                <TextBlock Text="网络同步"
+                <TextBlock Text="{loc:Loc Sync.Heading, Default='网络同步'}"
                            Style="{StaticResource Type.TitleLarge}"
                            Margin="0,0,0,14" />
 
@@ -48,8 +49,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="启用网络同步" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="通过 WebDAV 或 Cloudflare R2 在多台设备间同步便签；修改后需点下方「保存」生效"
+                                <TextBlock Text="{loc:Loc SyncSettings.Enable, Default='启用网络同步'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc SyncSettings.EnableHint, Default='通过 WebDAV 或 Cloudflare R2 在多台设备间同步便签；修改后需点下方「保存」生效'}"
                                            Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -66,8 +67,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="存储后端" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="WebDAV 适用于坚果云/Nextcloud/Alist 等；R2 走 S3 兼容 API"
+                                <TextBlock Text="{loc:Loc SyncSettings.Backend, Default='存储后端'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc SyncSettings.BackendHint, Default='WebDAV 适用于坚果云/Nextcloud/Alist 等；R2 走 S3 兼容 API'}"
                                            Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                             </StackPanel>
                             <ComboBox Grid.Column="1"
@@ -81,7 +82,7 @@
 
                         <!-- 3. WebDAV 配置面板 -->
                         <StackPanel Visibility="{Binding IsWebDavPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Text="服务器地址（目录级 URL，如 https://dav.example.com/dav/StickyNotes/）"
+                            <TextBlock Text="{loc:Loc SyncSettings.WebDavUrlLabel, Default='服务器地址（目录级 URL，如 https://dav.example.com/dav/StickyNotes/）'}"
                                        Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                             <ui:TextBox Text="{Binding SyncWebDavUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         PlaceholderText="https://"
@@ -94,11 +95,11 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="用户名" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
+                                    <TextBlock Text="{loc:Loc SyncSettings.UsernameLabel, Default='用户名'}" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                                     <ui:TextBox Text="{Binding SyncWebDavUsername, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="密码 / 应用专用密码" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
+                                    <TextBlock Text="{loc:Loc SyncSettings.PasswordLabel, Default='密码 / 应用专用密码'}" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                                     <PasswordBox x:Name="WebDavPasswordBox"
                                                  PasswordChanged="WebDavPasswordBox_OnPasswordChanged" />
                                 </StackPanel>
@@ -113,8 +114,8 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="允许明文 HTTP（仅限内网 NAS）" Style="{StaticResource Type.SettingTitle}" />
-                                    <TextBlock Text="默认强制 HTTPS；勾选后允许 http:// 地址"
+                                    <TextBlock Text="{loc:Loc SyncSettings.AllowInsecure, Default='允许明文 HTTP（仅限内网 NAS）'}" Style="{StaticResource Type.SettingTitle}" />
+                                    <TextBlock Text="{loc:Loc SyncSettings.AllowInsecureHint, Default='默认强制 HTTPS；勾选后允许 http:// 地址'}"
                                                Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1"
@@ -132,17 +133,17 @@
                                     <ColumnDefinition Width="150" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="S3 API 端点（R2 账户端点）" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
+                                    <TextBlock Text="{loc:Loc SyncSettings.S3EndpointLabel, Default='S3 API 端点（R2 账户端点）'}" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                                     <ui:TextBox Text="{Binding SyncS3Endpoint, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 PlaceholderText="https://&lt;account-id&gt;.r2.cloudflarestorage.com" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="桶名" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
+                                    <TextBlock Text="{loc:Loc SyncSettings.S3BucketLabel, Default='桶名'}" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                                     <ui:TextBox Text="{Binding SyncS3Bucket, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
                             </Grid>
 
-                            <TextBlock Text="对象前缀子目录（必填，与其他数据隔离）"
+                            <TextBlock Text="{loc:Loc SyncSettings.S3PrefixLabel, Default='对象前缀子目录（必填，与其他数据隔离）'}"
                                        Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                             <ui:TextBox Text="{Binding SyncS3BasePrefix, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         PlaceholderText="stickynotes/"
@@ -155,11 +156,11 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="访问密钥 ID (Access Key)" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
+                                    <TextBlock Text="{loc:Loc SyncSettings.S3AccessKeyLabel, Default='访问密钥 ID (Access Key)'}" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                                     <ui:TextBox Text="{Binding SyncS3AccessKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="秘密访问密钥 (Secret Key)" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
+                                    <TextBlock Text="{loc:Loc SyncSettings.S3SecretKeyLabel, Default='秘密访问密钥 (Secret Key)'}" Style="{StaticResource Type.CaptionSubtle}" Margin="0,0,0,4" />
                                     <PasswordBox x:Name="S3SecretKeyBox"
                                                  PasswordChanged="S3SecretKeyBox_OnPasswordChanged" />
                                 </StackPanel>
@@ -178,8 +179,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                                <TextBlock Text="启用远端数据加密" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="便签正文经 AES-256 加密存入远端，服务商无法查看内容"
+                                <TextBlock Text="{loc:Loc SyncSettings.Encryption, Default='启用远端数据加密'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc SyncSettings.EncryptionHint, Default='便签正文经 AES-256 加密存入远端，服务商无法查看内容'}"
                                            Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -196,8 +197,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="后台同步间隔" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="便签新增/修改后 5 秒自动同步一次"
+                                <TextBlock Text="{loc:Loc SyncSettings.Interval, Default='后台同步间隔'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc SyncSettings.IntervalHint, Default='便签新增/修改后 5 秒自动同步一次'}"
                                            Style="{StaticResource Type.CaptionSubtle}" TextWrapping="Wrap" Margin="0,3,0,0" />
                             </StackPanel>
                             <ComboBox Grid.Column="1"
@@ -211,7 +212,7 @@
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                             <ui:Button Appearance="Primary"
-                                       Content="保存"
+                                       Content="{loc:Loc SyncSettings.Save, Default='保存'}"
                                        Padding="14,6"
                                        Margin="0,0,10,0"
                                        Command="{Binding SaveSyncSettingsCommand}">
@@ -220,7 +221,7 @@
                                 </ui:Button.Icon>
                             </ui:Button>
                             <ui:Button Appearance="Secondary"
-                                       Content="测试连接"
+                                       Content="{loc:Loc SyncSettings.TestConnection, Default='测试连接'}"
                                        Padding="14,6"
                                        Margin="0,0,10,0"
                                        Command="{Binding TestSyncConnectionCommand}">
@@ -229,7 +230,7 @@
                                 </ui:Button.Icon>
                             </ui:Button>
                             <ui:Button Appearance="Secondary"
-                                       Content="立即同步"
+                                       Content="{loc:Loc Sync.Now, Default='立即同步'}"
                                        Padding="14,6"
                                        Command="{Binding SyncNowManualCommand}">
                                 <ui:Button.Icon>
@@ -245,7 +246,7 @@
                         <TextBlock Text="{Binding SyncStatusText}"
                                    Style="{StaticResource Type.CaptionSubtle}"
                                    TextWrapping="Wrap" Margin="0,0,0,4" />
-                        <TextBlock Text="{Binding SyncDeviceId, StringFormat=设备标识：{0}}"
+                        <TextBlock Text="{Binding SyncDeviceIdText}"
                                    Style="{StaticResource Type.CaptionSubtle}"
                                    FontSize="11" Opacity="0.8" />
                     </StackPanel>

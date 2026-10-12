@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:StickyNotes.Services.Localization"
              IsHitTestVisible="True"
              Focusable="False">
 
@@ -20,12 +21,12 @@
                            HorizontalAlignment="Center"
                            Margin="0,0,0,12" />
 
-            <TextBlock Text="内容已锁定"
+            <TextBlock Text="{loc:Loc Pin.LockedTitle, Default='内容已锁定'}"
                        Style="{StaticResource Type.Subtitle}"
                        HorizontalAlignment="Center" />
 
             <TextBlock x:Name="HintText"
-                       Text="输入 PIN 后按 Enter 解锁"
+                       Text="{loc:Loc Pin.HintDefault, Default='输入 PIN 后按 Enter 解锁'}"
                        Style="{StaticResource Type.CaptionSubtle}"
                        HorizontalAlignment="Center"
                        Margin="0,6,0,20" />
@@ -38,12 +39,12 @@
                          PasswordChar="●"
                          HorizontalContentAlignment="Center"
                          VerticalContentAlignment="Center"
-                         AutomationProperties.Name="PIN 密码输入框"
+                         AutomationProperties.Name="{loc:Loc Pin.BoxName, Default='PIN 密码输入框'}"
                          KeyDown="PinBox_KeyDown" />
 
             <!-- 错误提示：验证失败时显示 -->
             <TextBlock x:Name="ErrorText"
-                       Text="PIN 不正确，请重试"
+                       Text="{loc:Loc Pin.Incorrect, Default='PIN 不正确，请重试'}"
                        Foreground="{StaticResource Fluent.DangerBrush}"
                        Style="{StaticResource Type.Caption}"
                        HorizontalAlignment="Center"
@@ -54,11 +55,11 @@
                  用 Button 而非纯 TextBlock：键盘用户可 Tab 聚焦、Enter 触发（F-P1-11 剩余项） -->
             <Button HorizontalAlignment="Center"
                     Margin="0,24,0,0"
-                    AutomationProperties.Name="忘记 PIN 怎么办"
+                    AutomationProperties.Name="{loc:Loc Pin.ForgotName, Default='忘记 PIN 怎么办'}"
                     Click="ForgotPin_Click">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
-                        <TextBlock Text="忘记 PIN？"
+                        <TextBlock Text="{loc:Loc Pin.Forgot, Default='忘记 PIN？'}"
                                    Style="{StaticResource Type.CaptionSubtle}"
                                    Foreground="{StaticResource Fluent.AccentBrush}"
                                    Cursor="Hand">

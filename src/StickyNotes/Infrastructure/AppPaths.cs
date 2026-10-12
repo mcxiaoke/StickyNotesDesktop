@@ -1,4 +1,5 @@
 using System.IO;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Infrastructure;
 
@@ -120,14 +121,14 @@ public static class AppPaths
         {
             if (!string.IsNullOrWhiteSpace(_dataDirOverride))
             {
-                return "手动覆盖模式 (Override)";
+                return Loc.T("Deployment.Override", "手动覆盖模式 (Override)");
             }
 
             try
             {
                 if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(DataDirEnvVarName)))
                 {
-                    return "环境变量模式 (STICKYNOTES_DATA_DIR)";
+                    return Loc.T("Deployment.EnvVar", "环境变量模式 (STICKYNOTES_DATA_DIR)");
                 }
             }
             catch (Exception ex)
@@ -136,7 +137,9 @@ public static class AppPaths
                 System.Diagnostics.Debug.WriteLine($"[AppPaths] 判定数据目录来源时读取环境变量失败: {ex.Message}");
             }
 
-            return IsPortableMode ? "便携绿化模式 (app_data)" : "标准漫游模式 (%LOCALAPPDATA%)";
+            return IsPortableMode
+                ? Loc.T("Deployment.Portable", "便携绿化模式 (app_data)")
+                : Loc.T("Deployment.Roaming", "标准漫游模式 (%LOCALAPPDATA%)");
         }
     }
 

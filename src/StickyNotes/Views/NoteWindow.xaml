@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:models="clr-namespace:StickyNotes.Models"
+        xmlns:loc="clr-namespace:StickyNotes.Services.Localization"
         Title="{Binding WindowTitle}"
         Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
         Width="380" Height="420"
@@ -56,8 +57,8 @@
                     <!-- 新建便签按钮 -->
                     <Button Grid.Column="0"
                             Style="{StaticResource StickyToolbarButtonStyle}"
-                            ToolTip="新建便签 (Ctrl+N)"
-                            AutomationProperties.Name="新建便签"
+                            ToolTip="{loc:Loc Note.NewTooltip, Default='新建便签 (Ctrl+N)'}"
+                            AutomationProperties.Name="{loc:Loc Note.NewName, Default='新建便签'}"
                             Click="NewNoteButton_Click">
                         <ui:SymbolIcon Symbol="Add20" FontSize="16" Foreground="{Binding Color, Converter={StaticResource NoteColorToTextConverter}}" />
                     </Button>
@@ -79,8 +80,8 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- 桌面置顶图钉切换按钮 -->
                         <Button Style="{StaticResource StickyToolbarButtonStyle}"
-                                ToolTip="桌面置顶 (Ctrl+P)"
-                                AutomationProperties.Name="桌面置顶"
+                                ToolTip="{loc:Loc Note.PinTooltip, Default='桌面置顶 (Ctrl+P)'}"
+                                AutomationProperties.Name="{loc:Loc Note.PinName, Default='桌面置顶'}"
                                 Margin="0,0,2,0"
                                 Command="{Binding TogglePinCommand}">
                             <Grid>
@@ -97,8 +98,8 @@
                         <!-- 微软 Sticky Notes 原汁原味的 ··· 更多菜单 -->
                         <Button x:Name="MoreMenuButton"
                                 Style="{StaticResource StickyToolbarButtonStyle}"
-                                ToolTip="便签设置与颜色"
-                                AutomationProperties.Name="便签设置与颜色"
+                                ToolTip="{loc:Loc Note.MoreTooltip, Default='便签设置与颜色'}"
+                                AutomationProperties.Name="{loc:Loc Note.MoreName, Default='便签设置与颜色'}"
                                 Margin="0,0,2,0"
                                 Click="MoreMenuButton_Click">
                             <ui:SymbolIcon Symbol="MoreHorizontal20" FontSize="15"
@@ -121,7 +122,7 @@
 
                                 <StackPanel Width="224">
                                     <!-- 顶部提示 (规范次要字阶，不加粗) -->
-                                    <TextBlock Text="便签主题色彩"
+                                    <TextBlock Text="{loc:Loc Note.ThemeColors, Default='便签主题色彩'}"
                                                Style="{StaticResource Type.Caption}"
                                                Foreground="{StaticResource Fluent.TextSecondaryBrush}"
                                                Margin="4,2,0,8" />
@@ -129,7 +130,7 @@
                                     <!-- 7 色精美调色盘：带当前选中 Checkmark 勾选反馈 -->
                                     <WrapPanel HorizontalAlignment="Center">
                                         <!-- 1. 经典黄 -->
-                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Yellow.BgBrush}" BorderBrush="{StaticResource Sticky.Yellow.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Yellow}" ToolTip="经典黄" AutomationProperties.Name="便签颜色：经典黄" Cursor="Hand">
+                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Yellow.BgBrush}" BorderBrush="{StaticResource Sticky.Yellow.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Yellow}" ToolTip="{loc:Loc Note.Color.Yellow, Default='经典黄'}" AutomationProperties.Name="{loc:Loc Note.ColorAccessible.Yellow, Default='便签颜色：经典黄'}" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <Grid>
@@ -142,7 +143,7 @@
                                         </Button>
 
                                         <!-- 2. 清新绿 -->
-                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Green.BgBrush}" BorderBrush="{StaticResource Sticky.Green.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Green}" ToolTip="清新绿" AutomationProperties.Name="便签颜色：清新绿" Cursor="Hand">
+                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Green.BgBrush}" BorderBrush="{StaticResource Sticky.Green.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Green}" ToolTip="{loc:Loc Note.Color.Green, Default='清新绿'}" AutomationProperties.Name="{loc:Loc Note.ColorAccessible.Green, Default='便签颜色：清新绿'}" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <Grid>
@@ -155,7 +156,7 @@
                                         </Button>
 
                                         <!-- 3. 柔和粉 -->
-                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Pink.BgBrush}" BorderBrush="{StaticResource Sticky.Pink.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Pink}" ToolTip="柔和粉" AutomationProperties.Name="便签颜色：柔和粉" Cursor="Hand">
+                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Pink.BgBrush}" BorderBrush="{StaticResource Sticky.Pink.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Pink}" ToolTip="{loc:Loc Note.Color.Pink, Default='柔和粉'}" AutomationProperties.Name="{loc:Loc Note.ColorAccessible.Pink, Default='便签颜色：柔和粉'}" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <Grid>
@@ -168,7 +169,7 @@
                                         </Button>
 
                                         <!-- 4. 梦幻紫 -->
-                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Purple.BgBrush}" BorderBrush="{StaticResource Sticky.Purple.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Purple}" ToolTip="梦幻紫" AutomationProperties.Name="便签颜色：梦幻紫" Cursor="Hand">
+                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Purple.BgBrush}" BorderBrush="{StaticResource Sticky.Purple.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Purple}" ToolTip="{loc:Loc Note.Color.Purple, Default='梦幻紫'}" AutomationProperties.Name="{loc:Loc Note.ColorAccessible.Purple, Default='便签颜色：梦幻紫'}" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <Grid>
@@ -181,7 +182,7 @@
                                         </Button>
 
                                         <!-- 5. 天空蓝 -->
-                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Blue.BgBrush}" BorderBrush="{StaticResource Sticky.Blue.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Blue}" ToolTip="天空蓝" AutomationProperties.Name="便签颜色：天空蓝" Cursor="Hand">
+                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Blue.BgBrush}" BorderBrush="{StaticResource Sticky.Blue.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Blue}" ToolTip="{loc:Loc Note.Color.Blue, Default='天空蓝'}" AutomationProperties.Name="{loc:Loc Note.ColorAccessible.Blue, Default='便签颜色：天空蓝'}" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <Grid>
@@ -194,7 +195,7 @@
                                         </Button>
 
                                         <!-- 6. 浅灰白 -->
-                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Gray.BgBrush}" BorderBrush="{StaticResource Sticky.Gray.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Gray}" ToolTip="浅灰白" AutomationProperties.Name="便签颜色：浅灰白" Cursor="Hand">
+                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Gray.BgBrush}" BorderBrush="{StaticResource Sticky.Gray.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Gray}" ToolTip="{loc:Loc Note.Color.Gray, Default='浅灰白'}" AutomationProperties.Name="{loc:Loc Note.ColorAccessible.Gray, Default='便签颜色：浅灰白'}" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <Grid>
@@ -207,7 +208,7 @@
                                         </Button>
 
                                         <!-- 7. 暗黑夜间 -->
-                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Charcoal.BgBrush}" BorderBrush="{StaticResource Sticky.Charcoal.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Charcoal}" ToolTip="暗黑夜间" AutomationProperties.Name="便签颜色：暗黑夜间" Cursor="Hand">
+                                        <Button Width="26" Height="26" Margin="2" Background="{StaticResource Sticky.Charcoal.BgBrush}" BorderBrush="{StaticResource Sticky.Charcoal.BorderBrush}" BorderThickness="1" Click="ColorSelected_Click" Tag="{x:Static models:NoteColor.Charcoal}" ToolTip="{loc:Loc Note.Color.Charcoal, Default='暗黑夜间'}" AutomationProperties.Name="{loc:Loc Note.ColorAccessible.Charcoal, Default='便签颜色：暗黑夜间'}" Cursor="Hand">
                                             <Button.Template>
                                                 <ControlTemplate TargetType="Button">
                                                     <Grid>
@@ -225,7 +226,7 @@
                                     <!-- 快捷跳转：便签列表 (标准 Windows 11 Fluent 菜单项交互) -->
                                     <Button Style="{StaticResource FluentFlyoutMenuItemStyle}"
                                             Click="ShowNotesList_Click"
-                                            ToolTip="打开便签管理中心">
+                                            ToolTip="{loc:Loc Note.OpenListTooltip, Default='打开便签管理中心'}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="22" />
@@ -233,7 +234,7 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <ui:SymbolIcon Symbol="AppsListDetail20" FontSize="15" Foreground="{StaticResource Fluent.TextPrimaryBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" Text="便签列表" Style="{StaticResource Type.Body}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                            <TextBlock Grid.Column="1" Text="{loc:Loc Note.OpenList, Default='便签列表'}" Style="{StaticResource Type.Body}" VerticalAlignment="Center" Margin="6,0,0,0" />
                                             <TextBlock Grid.Column="2" Text="Ctrl+H" Style="{StaticResource Type.CaptionSubtle}" TextWrapping="NoWrap" VerticalAlignment="Center" />
                                         </Grid>
                                     </Button>
@@ -241,7 +242,7 @@
                                     <!-- 归档便签 (危险操作项：统一标准整行菜单) -->
                                     <Button Style="{StaticResource FluentFlyoutDangerMenuItemStyle}"
                                             Click="DeleteButton_Click"
-                                            ToolTip="归档此便签">
+                                            ToolTip="{loc:Loc Note.ArchiveTooltip, Default='归档此便签'}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="22" />
@@ -249,7 +250,7 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <ui:SymbolIcon Symbol="Archive20" FontSize="15" Foreground="{StaticResource Fluent.DangerBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" Text="归档便签" Style="{StaticResource Type.Body}" Foreground="{StaticResource Fluent.DangerBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                            <TextBlock Grid.Column="1" Text="{loc:Loc Note.Archive, Default='归档便签'}" Style="{StaticResource Type.Body}" Foreground="{StaticResource Fluent.DangerBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
                                             <TextBlock Grid.Column="2" Text="Ctrl+D" Style="{StaticResource Type.CaptionSubtle}" TextWrapping="NoWrap" Foreground="{StaticResource Fluent.DangerBrush}" Opacity="0.8" VerticalAlignment="Center" />
                                         </Grid>
                                     </Button>
@@ -261,8 +262,8 @@
                         <Button x:Name="CloseNoteButton"
                                 Style="{StaticResource StickyCloseButtonStyle}"
                                 WindowChrome.IsHitTestVisibleInChrome="True"
-                                ToolTip="关闭便签 (Ctrl+W)"
-                                AutomationProperties.Name="关闭便签"
+                                ToolTip="{loc:Loc Note.CloseTooltip, Default='关闭便签 (Ctrl+W)'}"
+                                AutomationProperties.Name="{loc:Loc Note.CloseName, Default='关闭便签'}"
                                 Click="CloseButton_Click">
                             <ui:SymbolIcon Symbol="Dismiss20" FontSize="15"
                                            Foreground="{Binding Color, Converter={StaticResource NoteColorToTextConverter}}" />
@@ -296,7 +297,7 @@
                 <TextBlock Style="{StaticResource Type.CaptionSubtle}"
                            Foreground="{Binding Color, Converter={StaticResource NoteColorToSecondaryTextConverter}}"
                            VerticalAlignment="Center">
-                    <Run Text="{Binding Content.Length, Mode=OneWay}" /><Run Text=" 字符" />
+                    <Run Text="{Binding Content.Length, Mode=OneWay}" /><Run Text="{loc:Loc Note.CharUnit, Default=' 字符'}" />
                 </TextBlock>
 
                 <!-- 真实自动保存状态：与 NoteViewModel.SaveState 严格对应（保存中 / 已同步 HH:mm:ss / 保存失败可点击重试） -->
@@ -307,7 +308,7 @@
                         BorderThickness="0"
                         Padding="4,0"
                         Command="{Binding RetrySaveCommand}"
-                        AutomationProperties.Name="自动保存状态，保存失败时可点击重试">
+                        AutomationProperties.Name="{loc:Loc Note.SaveStateName, Default='自动保存状态，保存失败时可点击重试'}">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Visibility" Value="Visible" />

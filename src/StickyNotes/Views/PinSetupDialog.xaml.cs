@@ -1,5 +1,6 @@
 using System.Windows;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Views;
 
@@ -42,20 +43,23 @@ public partial class PinSetupDialog : Wpf.Ui.Controls.FluentWindow
         switch (_mode)
         {
             case PinDialogMode.Enable:
-                HeaderText.Text = "设置 PIN";
-                SubHeaderText.Text = "设置后打开便签列表与归档时需输入 PIN（4~20 位，内容不限，轻量防偷窥）";
+                HeaderText.Text = Loc.T("Pin.Setup.SetHeader", "设置 PIN");
+                SubHeaderText.Text = Loc.T("Pin.Setup.SetSubHeader",
+                    "设置后打开便签列表与归档时需输入 PIN（4~20 位，内容不限，轻量防偷窥）");
                 CurrentPinLabel.Visibility = Visibility.Collapsed;
                 CurrentPinBox.Visibility = Visibility.Collapsed;
                 break;
 
             case PinDialogMode.Change:
-                HeaderText.Text = "修改 PIN";
-                SubHeaderText.Text = "需先验证当前 PIN，再输入新 PIN（4~20 位，内容不限）";
+                HeaderText.Text = Loc.T("Pin.Setup.ChangeHeader", "修改 PIN");
+                SubHeaderText.Text = Loc.T("Pin.Setup.ChangeSubHeader",
+                    "需先验证当前 PIN，再输入新 PIN（4~20 位，内容不限）");
                 break;
 
             case PinDialogMode.Disable:
-                HeaderText.Text = "清除 PIN";
-                SubHeaderText.Text = "输入当前 PIN 验证通过后即可关闭 PIN 锁定";
+                HeaderText.Text = Loc.T("Pin.Setup.ClearHeader", "清除 PIN");
+                SubHeaderText.Text = Loc.T("Pin.Setup.ClearSubHeader",
+                    "输入当前 PIN 验证通过后即可关闭 PIN 锁定");
                 NewPinLabel.Visibility = Visibility.Collapsed;
                 NewPinBox.Visibility = Visibility.Collapsed;
                 ConfirmPinLabel.Visibility = Visibility.Collapsed;
@@ -74,7 +78,7 @@ public partial class PinSetupDialog : Wpf.Ui.Controls.FluentWindow
         {
             if (!_pinService.VerifyPin(current))
             {
-                ShowError("当前 PIN 不正确");
+                ShowError(Loc.T("Pin.Error.Incorrect", "当前 PIN 不正确"));
                 return;
             }
         }
@@ -83,13 +87,14 @@ public partial class PinSetupDialog : Wpf.Ui.Controls.FluentWindow
         {
             if (!PinService.IsValidPin(newPin))
             {
-                ShowError($"新 PIN 长度须为 {PinService.MinPinLength}~{PinService.MaxPinLength} 位");
+                ShowError(Loc.T("Pin.Error.Length", "新 PIN 长度须为 {0}~{1} 位",
+                    PinService.MinPinLength, PinService.MaxPinLength));
                 return;
             }
 
             if (newPin != confirm)
             {
-                ShowError("两次输入的新 PIN 不一致");
+                ShowError(Loc.T("Pin.Error.Mismatch", "两次输入的新 PIN 不一致"));
                 return;
             }
         }

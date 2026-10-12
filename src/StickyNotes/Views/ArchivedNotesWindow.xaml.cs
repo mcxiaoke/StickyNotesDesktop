@@ -4,6 +4,7 @@ using System.Windows.Input;
 using StickyNotes.Infrastructure;
 using StickyNotes.Models;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 using StickyNotes.ViewModels;
 
 namespace StickyNotes.Views;
@@ -48,7 +49,8 @@ public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
             {
                 // 数据库/IO 异常不允许在 async void 中崩溃进程（P2-5）
                 AppLog.Error($"[ArchivedNotesWindow] 加载归档列表失败: {ex.Message}", ex);
-                MessageBox.Show(this, $"加载归档列表失败：{ex.Message}", "错误",
+                MessageBox.Show(this, Loc.T("Archive.Error.LoadFailed", "加载归档列表失败：{0}", ex.Message),
+                    Loc.T("Common.Error", "错误"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
@@ -124,7 +126,8 @@ public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
             catch (Exception ex)
             {
                 AppLog.Error($"[ArchivedNotesWindow] 恢复便签 {note.Id} 失败: {ex.Message}", ex);
-                MessageBox.Show(this, $"恢复便签失败：{ex.Message}", "操作失败",
+                MessageBox.Show(this, Loc.T("Archive.Error.RestoreFailed", "恢复便签失败：{0}", ex.Message),
+                    Loc.T("Common.OperationFailed", "操作失败"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -137,8 +140,8 @@ public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
             // 显式指定 Owner：避免确认框被主窗口遮挡，用户误以为无响应而重复点击（F-P1-10 剩余项）
             var result = MessageBox.Show(
                 this,
-                "确定要彻底删除该便签吗？\n此操作无法撤销，数据将永久丢失。",
-                "彻底删除确认",
+                Loc.T("Archive.Confirm.HardDelete", "确定要彻底删除该便签吗？\n此操作无法撤销，数据将永久丢失。"),
+                Loc.T("Archive.Confirm.HardDeleteTitle", "彻底删除确认"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning
             );
@@ -152,7 +155,8 @@ public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
                 catch (Exception ex)
                 {
                     AppLog.Error($"[ArchivedNotesWindow] 彻底删除便签 {note.Id} 失败: {ex.Message}", ex);
-                    MessageBox.Show(this, $"彻底删除失败：{ex.Message}", "操作失败",
+                    MessageBox.Show(this, Loc.T("Archive.Error.HardDeleteFailed", "彻底删除失败：{0}", ex.Message),
+                        Loc.T("Common.OperationFailed", "操作失败"),
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -163,8 +167,8 @@ public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
     {
         var result = MessageBox.Show(
             this,
-            "确定要清空所有已归档的便签吗？\n此操作将永久删除所有归档便签，无法撤销。",
-            "清空归档确认",
+            Loc.T("Archive.Confirm.ClearAll", "确定要清空所有已归档的便签吗？\n此操作将永久删除所有归档便签，无法撤销。"),
+            Loc.T("Archive.Confirm.ClearAllTitle", "清空归档确认"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning
         );
@@ -178,7 +182,8 @@ public partial class ArchivedNotesWindow : Wpf.Ui.Controls.FluentWindow
             catch (Exception ex)
             {
                 AppLog.Error($"[ArchivedNotesWindow] 清空归档失败: {ex.Message}", ex);
-                MessageBox.Show(this, $"清空归档失败：{ex.Message}", "操作失败",
+                MessageBox.Show(this, Loc.T("Archive.Error.ClearAllFailed", "清空归档失败：{0}", ex.Message),
+                    Loc.T("Common.OperationFailed", "操作失败"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

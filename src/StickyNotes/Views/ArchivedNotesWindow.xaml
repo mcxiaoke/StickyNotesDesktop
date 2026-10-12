@@ -4,7 +4,8 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:models="clr-namespace:StickyNotes.Models"
                  xmlns:controls="clr-namespace:StickyNotes.Views.Controls"
-                 Title="已归档便签"
+                 xmlns:loc="clr-namespace:StickyNotes.Services.Localization"
+                 Title="{loc:Loc Archive.WindowTitle, Default='已归档便签'}"
                  Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                  Width="480" Height="720"
                  MinWidth="380" MinHeight="520"
@@ -23,7 +24,7 @@
 
         <!-- 0. Fluent 标题栏 -->
         <ui:TitleBar Grid.Row="0"
-                     Title="已归档便签"
+                     Title="{loc:Loc Archive.WindowTitle, Default='已归档便签'}"
                      Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                      ShowMaximize="True"
                      ShowMinimize="True" />
@@ -54,14 +55,14 @@
                                    FontSize="22"
                                    Foreground="{StaticResource Fluent.AccentBrush}"
                                    Margin="0,0,8,0" />
-                    <TextBlock Text="已归档便签"
+                    <TextBlock Text="{loc:Loc Archive.WindowTitle, Default='已归档便签'}"
                                Style="{StaticResource Type.TitleLarge}" />
                     <Border Background="{StaticResource Fluent.SubtleBorderBrush}"
                             CornerRadius="{StaticResource CornerRadius.Pill}"
                             Padding="8,2"
                             Margin="8,0,0,0"
                             VerticalAlignment="Center">
-                        <TextBlock Text="{Binding ArchivedCount, StringFormat='{}{0} 条'}"
+                        <TextBlock Text="{Binding ArchivedCountText, Mode=OneWay}"
                                    Style="{StaticResource Type.Caption}"
                                    Foreground="{StaticResource Fluent.TextSecondaryBrush}" />
                     </Border>
@@ -71,9 +72,9 @@
                 <ui:Button x:Name="ClearAllButton"
                            Grid.Column="1"
                            Appearance="Secondary"
-                           Content="清空归档"
+                           Content="{loc:Loc Archive.ClearAll, Default='清空归档'}"
                            Padding="12,6"
-                           ToolTip="彻底删除所有已归档的便签"
+                           ToolTip="{loc:Loc Archive.ClearAllTooltip, Default='彻底删除所有已归档的便签'}"
                            Foreground="{StaticResource Fluent.DangerBrush}"
                            IsEnabled="{Binding CanClearArchived}"
                            Click="ClearAllButton_Click">
@@ -86,7 +87,7 @@
             <!-- 1.2 现代 Fluent 搜索栏 -->
             <ui:TextBox x:Name="SearchBox"
                         Grid.Row="1"
-                        PlaceholderText="搜索已归档便签... (Ctrl+F)"
+                        PlaceholderText="{loc:Loc Archive.SearchPlaceholder, Default='搜索已归档便签... (Ctrl+F)'}"
                         ClearButtonEnabled="True"
                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         FontSize="13"
@@ -99,7 +100,7 @@
             <!-- 1.3 状态辅助说明条 -->
             <Grid Grid.Row="2" Margin="0,0,0,10">
                 <TextBlock Style="{StaticResource Type.CaptionSubtle}"
-                           Text="已归档便签不会显示在桌面贴纸与主列表中。支持恢复或彻底删除。" />
+                           Text="{loc:Loc Archive.Hint, Default='已归档便签不会显示在桌面贴纸与主列表中。支持恢复或彻底删除。'}" />
             </Grid>
 
             <!-- 1.4 主卡片流列表与空状态 -->
@@ -119,12 +120,12 @@
                                        Foreground="{StaticResource Fluent.TextSecondaryBrush}"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,12" />
-                        <TextBlock Text="暂无归档便签"
+                        <TextBlock Text="{loc:Loc Archive.EmptyTitle, Default='暂无归档便签'}"
                                    Style="{StaticResource Type.Subtitle}"
                                    Foreground="{StaticResource Fluent.TextPrimaryBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,6" />
-                        <TextBlock Text="在便签管理中心或贴纸窗口点击归档，便签将安全收纳在此处"
+                        <TextBlock Text="{loc:Loc Archive.EmptySubtitle, Default='在便签管理中心或贴纸窗口点击归档，便签将安全收纳在此处'}"
                                    Style="{StaticResource Type.CaptionSubtle}"
                                    HorizontalAlignment="Center"
                                    TextWrapping="Wrap"
@@ -229,8 +230,8 @@
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                                                     <!-- 恢复便签按钮 -->
                                                     <Button Style="{StaticResource StickyToolbarButtonStyle}"
-                                                            ToolTip="恢复便签到主列表"
-                                                            AutomationProperties.Name="恢复便签到主列表"
+                                                            ToolTip="{loc:Loc Archive.Restore, Default='恢复便签到主列表'}"
+                                                            AutomationProperties.Name="{loc:Loc Archive.Restore, Default='恢复便签到主列表'}"
                                                             Margin="0,0,4,0"
                                                             Click="RestoreNoteButton_Click">
                                                         <ui:SymbolIcon Symbol="ArrowUndo20"
@@ -240,8 +241,8 @@
 
                                                     <!-- 彻底永久删除按钮 -->
                                                     <Button Style="{StaticResource StickyToolbarButtonStyle}"
-                                                            ToolTip="彻底删除该便签 (不可撤销)"
-                                                            AutomationProperties.Name="彻底删除该便签"
+                                                            ToolTip="{loc:Loc Archive.HardDelete, Default='彻底删除该便签 (不可撤销)'}"
+                                                            AutomationProperties.Name="{loc:Loc Archive.HardDeleteName, Default='彻底删除该便签'}"
                                                             Click="HardDeleteNoteButton_Click">
                                                         <ui:SymbolIcon Symbol="Delete20"
                                                                        FontSize="15"
@@ -261,14 +262,14 @@
                                                            Style="{StaticResource Type.CaptionSubtle}"
                                                            Foreground="{Binding Color, Converter={StaticResource NoteColorToSecondaryTextConverter}}"
                                                            VerticalAlignment="Center">
-                                                    <Run Text="{Binding Content.Length, Mode=OneWay}" /><Run Text=" 字符" />
+                                                    <Run Text="{Binding Content.Length, Mode=OneWay}" /><Run Text="{loc:Loc Archive.CharUnit, Default=' 字符'}" />
                                                 </TextBlock>
 
                                                 <TextBlock Grid.Column="1"
                                                            Style="{StaticResource Type.CaptionSubtle}"
                                                            Foreground="{Binding Color, Converter={StaticResource NoteColorToSecondaryTextConverter}}"
                                                            VerticalAlignment="Center">
-                                                    <Run Text="修改于 " /><Run Text="{Binding UpdatedAt, Converter={StaticResource FriendlyDateTimeConverter}, Mode=OneWay}" />
+                                                    <Run Text="{loc:Loc Archive.ModifiedAtPrefix, Default='修改于 '}" /><Run Text="{Binding UpdatedAt, Converter={StaticResource FriendlyDateTimeConverter}, Mode=OneWay}" />
                                                 </TextBlock>
                                             </Grid>
                                         </Grid>

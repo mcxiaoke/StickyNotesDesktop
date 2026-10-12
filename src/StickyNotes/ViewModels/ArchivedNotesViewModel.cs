@@ -7,6 +7,7 @@ using StickyNotes.Infrastructure;
 using StickyNotes.Messages;
 using StickyNotes.Models;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.ViewModels;
 
@@ -43,6 +44,12 @@ public partial class ArchivedNotesViewModel : ObservableObject
 
     public int ArchivedCount => ArchivedNotes.Count;
 
+    /// <summary>
+    /// 归档数量展示文案（形如「12 条」）。原先用 XAML StringFormat 硬编码中文，
+    /// 无法本地化，故改为在 VM 侧组装。
+    /// </summary>
+    public string ArchivedCountText => Loc.T("Archive.Count", "{0} 条", ArchivedCount);
+
     public bool HasNoNotes => ArchivedNotes.Count == 0;
 
     /// <summary>
@@ -65,6 +72,7 @@ public partial class ArchivedNotesViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(FilteredNotes));
         OnPropertyChanged(nameof(ArchivedCount));
+        OnPropertyChanged(nameof(ArchivedCountText));
         OnPropertyChanged(nameof(HasNoNotes));
         OnPropertyChanged(nameof(CanClearArchived));
     }
@@ -86,6 +94,16 @@ public partial class ArchivedNotesViewModel : ObservableObject
                 // MessageHandler 委托等价 async void：数据库/IO 异常不允许直接终止进程（P2-5）
                 AppLog.Error($"[ArchivedNotesViewModel] 归档列表自动刷新失败: {ex.Message}", ex);
             }
+        });
+
+        // 语言切换：计数文案与卡片预览均派生自语言包，需显式重发通知
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) =>
+        {
+            foreach (var note in ArchivedNotes)
+            {
+                note.NotifyLocalizedTextChanged();
+            }
+            NotifyDerivedCollectionsChanged();
         });
     }
 

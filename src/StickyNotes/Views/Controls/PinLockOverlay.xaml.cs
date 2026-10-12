@@ -2,7 +2,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.Messaging;
+using StickyNotes.Messages;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 
 namespace StickyNotes.Views.Controls;
 
@@ -39,13 +42,21 @@ public partial class PinLockOverlay : UserControl
     {
         if (d is not PinLockOverlay overlay) return;
         overlay.HintText.Text = e.NewValue is PinLockReason.IdleTimeout
-            ? "长时间未操作，已自动锁定"
-            : "输入 PIN 后按 Enter 解锁";
+            ? Loc.T("Pin.HintAutoLocked", "长时间未操作，已自动锁定")
+            : Loc.T("Pin.HintDefault", "输入 PIN 后按 Enter 解锁");
     }
 
     public PinLockOverlay()
     {
         InitializeComponent();
+
+        // HintText 在 XAML 里已走 {loc:Loc ...} 绑定会随语言自动刷新，
+        // 但 OnLockReasonChanged 是代码赋值，会覆盖绑定值，故这里只做一次性订阅，
+        // 让锁定原因在切换语言后仍能重新计算。
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) =>
+            HintText.Text = LockReason is PinLockReason.IdleTimeout
+                ? Loc.T("Pin.HintAutoLocked", "长时间未操作，已自动锁定")
+                : Loc.T("Pin.HintDefault", "输入 PIN 后按 Enter 解锁"));
     }
 
     public static readonly DependencyProperty IsLockedProperty =
@@ -143,10 +154,11 @@ public partial class PinLockOverlay : UserControl
     private void ForgotPin_Click(object sender, RoutedEventArgs e)
     {
         MessageBox.Show(
-            "PIN 为轻量防偷窥保护，不提供应用内找回。\n\n" +
-            "如需重置：先退出本应用，再打开数据目录下的 settings.json，\n" +
-            "删除 \"PinEnabled\"、\"PinSalt\"、\"PinHash\" 三个字段后保存，重新启动即可。",
-            "忘记 PIN",
+            Loc.T("Pin.ForgotBody",
+                "PIN 为轻量防偷窥保护，不提供应用内找回。\n\n" +
+                "如需重置：先退出本应用，再打开数据目录下的 settings.json，\n" +
+                "删除 \"PinEnabled\"、\"PinSalt\"、\"PinHash\" 三个字段后保存，重新启动即可。"),
+            Loc.T("Pin.ForgotTitle", "忘记 PIN"),
             MessageBoxButton.OK,
             MessageBoxImage.Information);
     }

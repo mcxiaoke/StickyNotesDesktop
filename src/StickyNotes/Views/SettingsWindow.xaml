@@ -2,7 +2,8 @@
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 Title="设置"
+                 xmlns:loc="clr-namespace:StickyNotes.Services.Localization"
+                 Title="{loc:Loc Settings.WindowTitle, Default='设置'}"
                  Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                  Width="480" Height="680"
                  MinWidth="420" MinHeight="560"
@@ -21,7 +22,7 @@
 
         <!-- 0. Fluent 标题栏 -->
         <ui:TitleBar Grid.Row="0"
-                     Title="设置"
+                     Title="{loc:Loc Settings.WindowTitle, Default='设置'}"
                      Icon="pack://application:,,,/StickyNotes;component/Assets/AppIcon.ico"
                      ShowMaximize="False"
                      ShowMinimize="True" />
@@ -30,12 +31,12 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="{StaticResource Thickness.PageMargin}">
                 <!-- 顶部页面标题 (遵循 Windows 11 Fluent 设置规范) -->
-                <TextBlock Text="设置"
+                <TextBlock Text="{loc:Loc Settings.Heading, Default='设置'}"
                            Style="{StaticResource Type.TitleLarge}"
                            Margin="0,0,0,14" />
 
                 <!-- 分组 1: 外观与字体 -->
-                <TextBlock Text="外观与显示"
+                <TextBlock Text="{loc:Loc Settings.GroupAppearance, Default='外观与显示'}"
                            Style="{StaticResource Type.Subtitle}"
                            Margin="0,0,0,8" />
 
@@ -55,9 +56,9 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                                <TextBlock Text="便签正文字号"
+                                <TextBlock Text="{loc:Loc Settings.FontSizeLabel, Default='便签正文字号'}"
                                            Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="调整便签的正文字体大小"
+                                <TextBlock Text="{loc:Loc Settings.FontSizeHint, Default='调整便签的正文字体大小'}"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextWrapping="Wrap"
                                            Margin="0,3,0,0" />
@@ -74,8 +75,35 @@
 
                         <Separator Background="{StaticResource Fluent.SubtleBorderBrush}" Margin="0,0,0,10" />
 
+                        <!-- 界面语言行 -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="{loc:Loc Settings.Language, Default='界面语言'}"
+                                           Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.LanguageHint, Default='选择界面显示语言，修改后立即生效'}"
+                                           Style="{StaticResource Type.CaptionSubtle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0" />
+                            </StackPanel>
+
+                            <ComboBox Grid.Column="1"
+                                      Width="200"
+                                      ItemsSource="{Binding LanguageOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Code"
+                                      SelectedValue="{Binding SelectedLanguage, Mode=TwoWay}"
+                                      VerticalAlignment="Center" />
+                        </Grid>
+
+                        <Separator Background="{StaticResource Fluent.SubtleBorderBrush}" Margin="0,0,0,10" />
+
                         <!-- 实时预览区 -->
-                        <TextBlock Text="文字效果实时预览："
+                        <TextBlock Text="{loc:Loc Settings.FontPreview, Default='文字效果实时预览：'}"
                                    Style="{StaticResource Type.CaptionSubtle}"
                                    Margin="0,0,0,6" />
                         <Border Background="{StaticResource Sticky.Yellow.BgBrush}"
@@ -92,7 +120,7 @@
                 </Border>
 
                 <!-- 分组 2: 窗口与系统集成 (托盘、热键、开机自启) -->
-                <TextBlock Text="系统与常驻"
+                <TextBlock Text="{loc:Loc Settings.GroupSystem, Default='系统与常驻'}"
                            Style="{StaticResource Type.Subtitle}"
                            Margin="0,4,0,8" />
 
@@ -111,8 +139,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="关闭主窗口时最小化到系统托盘" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="关闭主列表窗口后在后台保持运行，通过托盘图标可随时唤醒"
+                                <TextBlock Text="{loc:Loc Settings.MinimizeToTray, Default='关闭主窗口时最小化到系统托盘'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.MinimizeToTrayHint, Default='关闭主列表窗口后在后台保持运行，通过托盘图标可随时唤醒'}"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -129,8 +157,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="启用系统全局快捷键" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="Win+Alt+N：快速新建便签；Win+Alt+H：打开便签列表"
+                                <TextBlock Text="{loc:Loc Settings.EnableHotKeys, Default='启用系统全局快捷键'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.EnableHotKeysHint, Default='Win+Alt+N：快速新建便签；Win+Alt+H：打开便签列表'}"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -147,8 +175,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="开机自动启动" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="用户登录时自动启动应用"
+                                <TextBlock Text="{loc:Loc Settings.AutoStart, Default='开机自动启动'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.AutoStartHint, Default='用户登录时自动启动应用'}"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -165,8 +193,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="启动时最小化到系统托盘" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="随系统自启时不弹出主窗口"
+                                <TextBlock Text="{loc:Loc Settings.StartMinimized, Default='启动时最小化到系统托盘'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.StartMinimizedHint, Default='随系统自启时不弹出主窗口'}"
                                            Style="{StaticResource Type.CaptionSubtle}" Margin="0,3,0,0" />
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1"
@@ -178,7 +206,7 @@
                 </Border>
 
                 <!-- 分组 3: 数据备份与迁移 -->
-                <TextBlock Text="数据与备份"
+                <TextBlock Text="{loc:Loc Settings.GroupData, Default='数据与备份'}"
                            Style="{StaticResource Type.Subtitle}"
                            Margin="0,4,0,8" />
 
@@ -190,16 +218,16 @@
                         Margin="0,0,0,14"
                         Effect="{StaticResource Elevation.Card}">
                     <StackPanel>
-                        <TextBlock Text="JSON 备份导入与导出"
+                        <TextBlock Text="{loc:Loc Settings.JsonBackup, Default='JSON 备份导入与导出'}"
                                    Style="{StaticResource Type.SettingTitle}" />
-                        <TextBlock Text="将所有便签备份为标准 JSON 文件，或从备份文件还原便签数据"
+                        <TextBlock Text="{loc:Loc Settings.JsonBackupHint, Default='将所有便签备份为标准 JSON 文件，或从备份文件还原便签数据'}"
                                    Style="{StaticResource Type.CaptionSubtle}"
                                    Margin="0,3,0,12" />
 
                         <!-- 导出与导入按钮组 -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <ui:Button Appearance="Primary"
-                                       Content="导出便签 (JSON)"
+                                       Content="{loc:Loc Settings.ExportJson, Default='导出便签 (JSON)'}"
                                        Margin="0,0,10,0"
                                        Padding="14,6"
                                        Command="{Binding ExportJsonCommand}">
@@ -209,7 +237,7 @@
                             </ui:Button>
 
                             <ui:Button Appearance="Secondary"
-                                       Content="导入便签 (JSON)"
+                                       Content="{loc:Loc Settings.ImportJson, Default='导入便签 (JSON)'}"
                                        Padding="14,6"
                                        Command="{Binding ImportJsonCommand}">
                                 <ui:Button.Icon>
@@ -229,7 +257,7 @@
 
                             <StackPanel Grid.Column="0">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="本地数据目录"
+                                    <TextBlock Text="{loc:Loc Settings.DataDirectory, Default='本地数据目录'}"
                                                Style="{StaticResource Type.SettingTitle}" />
                                     <Border CornerRadius="4"
                                             Background="{DynamicResource ControlFillColorDefaultBrush}"
@@ -248,7 +276,7 @@
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextTrimming="CharacterEllipsis"
                                            Margin="0,4,0,0" />
-                                <TextBlock Text="提示：在 exe 同目录下放置 portable.ini 即可开启便携模式）"
+                                <TextBlock Text="{loc:Loc Settings.PortableHint, Default='提示：在 exe 同目录下放置 portable.ini 即可开启便携模式）'}"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            FontSize="11"
                                            Margin="0,3,0,0"
@@ -257,7 +285,7 @@
 
                             <ui:Button Grid.Column="1"
                                        Appearance="Secondary"
-                                       Content="打开目录"
+                                       Content="{loc:Loc Settings.OpenFolder, Default='打开目录'}"
                                        Padding="12,4"
                                        Command="{Binding OpenDataFolderCommand}"
                                        VerticalAlignment="Center">
@@ -270,7 +298,7 @@
                 </Border>
 
                 <!-- 分组: 网络同步（入口行，详细配置在独立窗口） -->
-                <TextBlock Text="网络同步"
+                <TextBlock Text="{loc:Loc Settings.GroupSync, Default='网络同步'}"
                            Style="{StaticResource Type.Subtitle}"
                            Margin="0,4,0,8" />
 
@@ -288,12 +316,12 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                            <TextBlock Text="多设备同步" Style="{StaticResource Type.SettingTitle}" />
+                            <TextBlock Text="{loc:Loc Settings.MultiDeviceSync, Default='多设备同步'}" Style="{StaticResource Type.SettingTitle}" />
                             <TextBlock Text="{Binding SyncStatusText}"
                                        Style="{StaticResource Type.CaptionSubtle}"
                                        TextWrapping="Wrap"
                                        Margin="0,3,0,0" />
-                            <TextBlock Text="通过 WebDAV 或 S3 同步"
+                            <TextBlock Text="{loc:Loc Settings.SyncVia, Default='通过 WebDAV 或 S3 同步'}"
                                        Style="{StaticResource Type.CaptionSubtle}"
                                        FontSize="11"
                                        Opacity="0.8"
@@ -303,7 +331,7 @@
 
                         <ui:Button Grid.Column="1"
                                    Appearance="Secondary"
-                                   Content="配置…"
+                                   Content="{loc:Loc Settings.SyncConfigure, Default='配置…'}"
                                    Padding="12,5"
                                    Command="{Binding OpenSyncSettingsCommand}"
                                    VerticalAlignment="Center">
@@ -315,7 +343,7 @@
                 </Border>
 
                 <!-- 分组: 隐私保护 (PIN 锁定 + 闲时自动收起) -->
-                <TextBlock Text="隐私保护"
+                <TextBlock Text="{loc:Loc Settings.GroupPrivacy, Default='隐私保护'}"
                            Style="{StaticResource Type.Subtitle}"
                            Margin="0,4,0,8" />
 
@@ -335,7 +363,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="PIN 锁定" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.PinLock, Default='PIN 锁定'}" Style="{StaticResource Type.SettingTitle}" />
                                 <TextBlock Text="{Binding PinStatusText}"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextWrapping="Wrap"
@@ -354,7 +382,7 @@
                                            Margin="0,4,0,0"
                                            Visibility="{Binding IsPinProtectionDisabled, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 <!-- PIN 数据损坏告警：绝不允许「以为受保护实则未受保护」静默发生 -->
-                                <TextBlock Text="⚠ 检测到 PIN 配置数据缺失或已损坏，锁定已失效。"
+                                <TextBlock Text="{loc:Loc Settings.PinDataCorrupted, Default='⚠ 检测到 PIN 配置数据缺失或已损坏，锁定已失效。'}"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            Foreground="{StaticResource Fluent.DangerBrush}"
                                            TextWrapping="Wrap"
@@ -365,7 +393,7 @@
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <!-- 未启用：显示启用按钮 -->
                                 <ui:Button Appearance="Primary"
-                                           Content="启用 PIN"
+                                           Content="{loc:Loc Settings.EnablePin, Default='启用 PIN'}"
                                            Padding="12,5"
                                            Command="{Binding EnablePinCommand}"
                                            Visibility="{Binding IsPinEnabled, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
@@ -374,12 +402,12 @@
                                 <StackPanel Orientation="Horizontal"
                                             Visibility="{Binding IsPinEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <ui:Button Appearance="Secondary"
-                                               Content="修改 PIN"
+                                               Content="{loc:Loc Settings.ChangePin, Default='修改 PIN'}"
                                                Padding="12,5"
                                                Margin="0,0,8,0"
                                                Command="{Binding ChangePinCommand}" />
                                     <ui:Button Appearance="Secondary"
-                                               Content="清除 PIN"
+                                               Content="{loc:Loc Settings.ClearPin, Default='清除 PIN'}"
                                                Padding="12,5"
                                                Foreground="{StaticResource Fluent.DangerBrush}"
                                                Command="{Binding ClearPinCommand}" />
@@ -397,8 +425,8 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                                <TextBlock Text="闲置自动锁定" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="无任何键鼠输入达到设定时间后，自动锁定"
+                                <TextBlock Text="{loc:Loc Settings.IdleLock, Default='闲置自动锁定'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.IdleLockHint, Default='无任何键鼠输入达到设定时间后，自动锁定'}"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextWrapping="Wrap"
                                            Margin="0,3,0,0" />
@@ -423,8 +451,8 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
-                                <TextBlock Text="启动时锁定" Style="{StaticResource Type.SettingTitle}" />
-                                <TextBlock Text="每次启动应用都需要输入 PIN"
+                                <TextBlock Text="{loc:Loc Settings.LockOnLaunch, Default='启动时锁定'}" Style="{StaticResource Type.SettingTitle}" />
+                                <TextBlock Text="{loc:Loc Settings.LockOnLaunchHint, Default='每次启动应用都需要输入 PIN'}"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            TextWrapping="Wrap"
                                            Margin="0,3,0,0" />
@@ -433,13 +461,13 @@
                             <ui:ToggleSwitch Grid.Column="1"
                                              IsChecked="{Binding LockOnLaunch, Mode=TwoWay}"
                                              VerticalAlignment="Center"
-                                             AutomationProperties.Name="启动时锁定" />
+                                             AutomationProperties.Name="{loc:Loc Settings.LockOnLaunch, Default='启动时锁定'}" />
                         </Grid>
                     </StackPanel>
                 </Border>
 
                 <!-- 分组 3: 关于与版本 -->
-                <TextBlock Text="关于"
+                <TextBlock Text="{loc:Loc Settings.GroupAbout, Default='关于'}"
                            Style="{StaticResource Type.Subtitle}"
                            Margin="0,4,0,8" />
 
@@ -459,9 +487,9 @@
                                    Margin="0,0,12,0"
                                    VerticalAlignment="Center" />
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="彩色便签"
+                                <TextBlock Text="{loc:Loc App.Name, Default='彩色便签'}"
                                            Style="{StaticResource Type.Subtitle}" />
-                                <TextBlock Text="基于 Windows 11 Fluent 现代桌面便签应用"
+                                <TextBlock Text="{loc:Loc Settings.AboutTagline, Default='基于 Windows 11 Fluent 现代桌面便签应用'}"
                                            Style="{StaticResource Type.CaptionSubtle}"
                                            Margin="0,2,0,0" />
                             </StackPanel>
@@ -473,7 +501,7 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="应用版本" Style="{StaticResource Type.CaptionSubtle}" />
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Settings.AppVersion, Default='应用版本'}" Style="{StaticResource Type.CaptionSubtle}" />
                             <TextBlock Grid.Column="1" Text="{Binding AppVersion}" Style="{StaticResource Type.Body}" FontWeight="SemiBold" />
                         </Grid>
 
@@ -482,7 +510,7 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Git 提交" Style="{StaticResource Type.CaptionSubtle}" />
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Settings.GitCommit, Default='Git 提交'}" Style="{StaticResource Type.CaptionSubtle}" />
                             <TextBlock Grid.Column="1" Text="{Binding GitCommit}" Style="{StaticResource Type.Caption}" FontFamily="Consolas" />
                         </Grid>
 
@@ -491,7 +519,7 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="构建时间" Style="{StaticResource Type.CaptionSubtle}" />
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Settings.BuildTime, Default='构建时间'}" Style="{StaticResource Type.CaptionSubtle}" />
                             <TextBlock Grid.Column="1" Text="{Binding BuildTime}" Style="{StaticResource Type.Caption}" />
                         </Grid>
 
@@ -500,7 +528,7 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="运行环境" Style="{StaticResource Type.CaptionSubtle}" />
+                            <TextBlock Grid.Column="0" Text="{loc:Loc Settings.Runtime, Default='运行环境'}" Style="{StaticResource Type.CaptionSubtle}" />
                             <TextBlock Grid.Column="1" Text="{Binding RuntimeInfo}" Style="{StaticResource Type.Caption}" />
                         </Grid>
                     </StackPanel>

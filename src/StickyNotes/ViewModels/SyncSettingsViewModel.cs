@@ -1,8 +1,11 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using StickyNotes.Infrastructure;
+using StickyNotes.Messages;
 using StickyNotes.Services;
+using StickyNotes.Services.Localization;
 using StickyNotes.Sync;
 
 namespace StickyNotes.ViewModels;
@@ -60,24 +63,35 @@ public partial class SyncSettingsViewModel : ObservableObject
     public IReadOnlyList<SyncBackendOption> SyncBackendOptions { get; } = new List<SyncBackendOption>
     {
         new("WebDAV", SyncBackendType.WebDav),
-        new("Cloudflare R2 (S3 兼容)", SyncBackendType.S3)
+        new(Loc.T("SyncSettings.BackendS3", "Cloudflare R2 (S3 兼容)"), SyncBackendType.S3)
     };
 
     public IReadOnlyList<SyncIntervalOption> SyncIntervalOptions { get; } = new List<SyncIntervalOption>
     {
-        new("5 分钟", 5),
-        new("10 分钟", 10),
-        new("15 分钟（默认）", 15),
-        new("30 分钟", 30),
-        new("60 分钟", 60),
-        new("120 分钟", 120)
+        new(Loc.T("SyncSettings.IntervalOption.M5", "5 分钟"), 5),
+        new(Loc.T("SyncSettings.IntervalOption.M10", "10 分钟"), 10),
+        new(Loc.T("SyncSettings.IntervalOption.M15", "15 分钟（默认）"), 15),
+        new(Loc.T("SyncSettings.IntervalOption.M30", "30 分钟"), 30),
+        new(Loc.T("SyncSettings.IntervalOption.M60", "60 分钟"), 60),
+        new(Loc.T("SyncSettings.IntervalOption.M120", "120 分钟"), 120)
     };
 
     public bool IsWebDavPanelVisible => SelectedSyncBackendType == SyncBackendType.WebDav;
 
     public bool IsS3PanelVisible => SelectedSyncBackendType == SyncBackendType.S3;
 
-    public string SyncDeviceId => string.IsNullOrWhiteSpace(Sync.DeviceId) ? "（尚未生成）" : Sync.DeviceId;
+    public string SyncDeviceId => string.IsNullOrWhiteSpace(Sync.DeviceId)
+        ? Loc.T("SyncSettings.DeviceIdEmpty", "（尚未生成）")
+        : Sync.DeviceId;
+
+    /// <summary>
+    /// 设备标识展示文案（形如「设备标识：abc-123」）。原先用 XAML StringFormat 硬编码中文前缀，
+    /// 无法本地化，故改为在 VM 侧组装。
+    /// </summary>
+    public string SyncDeviceIdText => Loc.T("SyncSettings.DeviceId", "设备标识：{0}", SyncDeviceId);
+
+    /// <summary>保存时刻的 HH:mm:ss 文本（供已保存提示格式化，避免时区/格式随界面语言漂移）</summary>
+    private static string _nowText() => DateTime.Now.ToString("HH:mm:ss");
 
     public SyncSettingsViewModel(SettingsService settingsService, SyncHost? syncHost = null)
     {
@@ -115,6 +129,24 @@ public partial class SyncSettingsViewModel : ObservableObject
         }
 
         RefreshSyncStatus();
+
+        // 语言切换刷新（弱引用总线；退订见 DetachSyncHostEvents）
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, (_, _) => RefreshLocalizedText());
+    }
+
+    /// <summary>
+    /// 语言切换后重发所有派生自语言包的属性通知。
+    /// 本 VM 注册为 Transient，订阅需与 <see cref="DetachSyncHostEvents"/> 中的退订保持对称，
+    /// 否则关闭窗口后仍会被总线持有。
+    /// </summary>
+    private void RefreshLocalizedText()
+    {
+        OnPropertyChanged(nameof(SyncDeviceIdText));
+        OnPropertyChanged(nameof(SyncWebDavCredentialHint));
+        OnPropertyChanged(nameof(SyncS3CredentialHint));
+        OnPropertyChanged(nameof(SyncBackendOptions));
+        OnPropertyChanged(nameof(SyncIntervalOptions));
+        RefreshSyncStatus();
     }
 
     /// <summary>
@@ -129,6 +161,8 @@ public partial class SyncSettingsViewModel : ObservableObject
         {
             _syncHost.StateChanged -= RefreshSyncStatusOnDispatcher;
         }
+
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     public bool SyncEnabled
@@ -193,8 +227,10 @@ public partial class SyncSettingsViewModel : ObservableObject
         get
         {
             if (!string.IsNullOrEmpty(_webDavPasswordInput))
-                return "凭据：已输入新密码（保存后生效）";
-            return string.IsNullOrEmpty(Sync.WebDavPassword) ? "凭据：未配置" : "凭据：已保存（输入新值可替换）";
+                return Loc.T("SyncSettings.CredNewPassword", "凭据：已输入新密码（保存后生效）");
+            return string.IsNullOrEmpty(Sync.WebDavPassword)
+                ? Loc.T("SyncSettings.CredNotConfigured", "凭据：未配置")
+                : Loc.T("SyncSettings.CredSaved", "凭据：已保存（输入新值可替换）");
         }
     }
 
@@ -247,8 +283,10 @@ public partial class SyncSettingsViewModel : ObservableObject
         get
         {
             if (!string.IsNullOrEmpty(_s3SecretKeyInput))
-                return "凭据：已输入新密钥（保存后生效）";
-            return string.IsNullOrEmpty(Sync.S3SecretKey) ? "凭据：未配置" : "凭据：已保存（输入新值可替换）";
+                return Loc.T("SyncSettings.CredNewSecret", "凭据：已输入新密钥（保存后生效）");
+            return string.IsNullOrEmpty(Sync.S3SecretKey)
+                ? Loc.T("SyncSettings.CredNotConfigured", "凭据：未配置")
+                : Loc.T("SyncSettings.CredSaved", "凭据：已保存（输入新值可替换）");
         }
     }
 
@@ -258,7 +296,7 @@ public partial class SyncSettingsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(SaveSyncSettingsCommand))]
     private bool _hasUnsavedChanges;
 
-    private string _saveHintText = "配置修改后需点「保存」才会写入配置文件";
+    private string _saveHintText = Loc.T("SyncSettings.SaveHintInitial", "配置修改后需点「保存」才会写入配置文件");
     /// <summary>保存提示行（未保存时提醒，保存后回显已保存时刻与同步触发）</summary>
     public string SaveHintText
     {
@@ -266,7 +304,7 @@ public partial class SyncSettingsViewModel : ObservableObject
         private set => SetProperty(ref _saveHintText, value);
     }
 
-    private string _syncStatusText = "同步未启用";
+    private string _syncStatusText = Loc.T("Sync.StatusNotEnabled", "同步未启用");
     /// <summary>同步状态行（最近成功时间 / 最近错误摘要）</summary>
     public string SyncStatusText
     {
@@ -294,7 +332,7 @@ public partial class SyncSettingsViewModel : ObservableObject
         if (_suppressDraftDirty) return;
 
         HasUnsavedChanges = true;
-        SaveHintText = "⚠️ 配置已修改，点「保存」后将立即生效";
+        SaveHintText = Loc.T("SyncSettings.SaveHintDirty", "⚠️ 配置已修改，点「保存」后将立即生效");
     }
 
     /// <summary>用草稿构造一份 SyncSettings（测试连接 / 校验用，不写回已保存配置）</summary>
@@ -375,11 +413,12 @@ public partial class SyncSettingsViewModel : ObservableObject
 
         HasUnsavedChanges = false;
         SaveHintText = s.Enabled && s.IsConfigured
-            ? $"已保存（{DateTime.Now:HH:mm:ss}），正在触发同步…"
-            : $"已保存（{DateTime.Now:HH:mm:ss}）";
+            ? Loc.T("SyncSettings.SavedTriggering", "已保存（{0}），正在触发同步…", _nowText())
+            : Loc.T("SyncSettings.Saved", "已保存（{0}）", _nowText());
         CredentialsCommitted?.Invoke();
         OnPropertyChanged(nameof(SyncWebDavCredentialHint));
         OnPropertyChanged(nameof(SyncS3CredentialHint));
+        OnPropertyChanged(nameof(SyncDeviceIdText));
 
         RefreshSyncStatus();
         AppLog.Info($"[SyncSettings] 同步配置已保存（后端={s.BackendType}, 间隔={s.IntervalMinutes}, 启用={s.Enabled}, 加密={s.EnableEncryption}）");
@@ -395,12 +434,15 @@ public partial class SyncSettingsViewModel : ObservableObject
             // 仅用草稿探测连通性，不写回已保存配置
             await StorageBackendFactory.TestConnectionAsync(BuildDraftSyncSettings());
             MessageBox.Show(
-                "连接成功，凭据有效。\n如需让本次修改正式生效，请点「保存」。",
-                "测试连接", MessageBoxButton.OK, MessageBoxImage.Information);
+                Loc.T("SyncSettings.TestSuccess",
+                    "连接成功，凭据有效。\n如需让本次修改正式生效，请点「保存」。"),
+                Loc.T("SyncSettings.TestConnection", "测试连接"),
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"连接失败：{ex.Message}", "测试连接", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(Loc.T("SyncSettings.TestFailed", "连接失败：{0}", ex.Message),
+                Loc.T("SyncSettings.TestConnection", "测试连接"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -417,8 +459,8 @@ public partial class SyncSettingsViewModel : ObservableObject
         if (HasUnsavedChanges)
         {
             MessageBox.Show(
-                "当前有未保存的同步配置修改。\n请先点「保存」再同步。",
-                "立即同步", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Loc.T("SyncSettings.UnsavedOnSync", "当前有未保存的同步配置修改。\n请先点「保存」再同步。"),
+                Loc.T("Sync.Now", "立即同步"), MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -429,12 +471,15 @@ public partial class SyncSettingsViewModel : ObservableObject
             if (summary != null)
             {
                 MessageBox.Show(
-                    $"同步完成。\n远端对象：{summary.Listed}\n下行应用：{summary.Downloaded}（守卫跳过 {summary.GuardedSkipped}）\n上传：{summary.Uploaded}",
-                    "立即同步", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Loc.T("SyncSettings.SyncDone",
+                        "同步完成。\n远端对象：{0}\n下行应用：{1}（守卫跳过 {2}）\n上传：{3}",
+                        summary.Listed, summary.Downloaded, summary.GuardedSkipped, summary.Uploaded),
+                    Loc.T("Sync.Now", "立即同步"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (!Sync.Enabled || !Sync.IsConfigured)
             {
-                MessageBox.Show("请先启用同步并保存服务器信息。", "立即同步", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Loc.T("SyncSettings.NotEnabledNoInfo", "请先启用同步并保存服务器信息。"),
+                    Loc.T("Sync.Now", "立即同步"), MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
         finally
@@ -449,8 +494,9 @@ public partial class SyncSettingsViewModel : ObservableObject
         if (!HasUnsavedChanges) return true;
 
         var answer = MessageBox.Show(
-            "同步配置有未保存的修改，关闭将丢弃这些修改）。\n确定要关闭吗？",
-            "同步设置", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+            Loc.T("SyncSettings.UnsavedOnClose", "同步配置有未保存的修改，关闭将丢弃这些修改）。\n确定要关闭吗？"),
+            Loc.T("SyncSettings.CloseConfirmTitle", "同步设置"),
+            MessageBoxButton.OKCancel, MessageBoxImage.Warning);
         return answer == MessageBoxResult.OK;
     }
 
@@ -471,20 +517,21 @@ public partial class SyncSettingsViewModel : ObservableObject
         if (!Sync.Enabled)
         {
             SyncStatusText = HasUnsavedChanges
-                ? "同步未启用（有未保存修改）"
-                : "同步未启用";
+                ? Loc.T("SyncSettings.StatusDirtyNotEnabled", "同步未启用（有未保存修改）")
+                : Loc.T("Sync.StatusNotEnabled", "同步未启用");
             return;
         }
 
         if (_syncHost == null)
         {
-            SyncStatusText = "同步服务未运行";
+            SyncStatusText = Loc.T("Sync.StatusNotRunning", "同步服务未运行");
             return;
         }
 
         var state = _syncHost.CurrentState;
         var countsSummary = state.LastUploadedCount.HasValue || state.LastDownloadedCount.HasValue
-            ? $"（上传 {state.LastUploadedCount ?? 0}，下载 {state.LastDownloadedCount ?? 0}）"
+            ? Loc.T("Sync.StatusCounts", "（上传 {0}，下载 {1}）",
+                state.LastUploadedCount ?? 0, state.LastDownloadedCount ?? 0)
             : string.Empty;
 
         if (state.LastError != null)
@@ -492,17 +539,19 @@ public partial class SyncSettingsViewModel : ObservableObject
             var attempt = state.LastAttemptAt?.ToLocalTime().ToString("HH:mm:ss") ?? "--";
             var lastOk = state.LastSuccessAt != null
                 ? state.LastSuccessAt.Value.ToLocalTime().ToString("MM-dd HH:mm") + countsSummary
-                : "从未成功";
+                : Loc.T("Sync.StatusNeverSynced", "从未成功");
             var error = state.LastError.Length > 80 ? state.LastError[..80] + "…" : state.LastError;
-            SyncStatusText = $"上次同步失败（{attempt}）：{error}；最近成功：{lastOk}";
+            SyncStatusText = Loc.T("SyncSettings.StatusFailed",
+                "上次同步失败（{0}）：{1}；最近成功：{2}", attempt, error, lastOk);
         }
         else if (state.LastSuccessAt != null)
         {
-            SyncStatusText = $"最近同步：{state.LastSuccessAt.Value.ToLocalTime():yyyy-MM-dd HH:mm:ss}{countsSummary}";
+            SyncStatusText = Loc.T("Sync.StatusSuccess", "最近同步：{0}",
+                state.LastSuccessAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") + countsSummary);
         }
         else
         {
-            SyncStatusText = "已启用，尚未同步";
+            SyncStatusText = Loc.T("Sync.StatusNotYetSynced", "已启用，尚未同步");
         }
     }
 }
